@@ -30,7 +30,6 @@ const TEMPLATES = [
   {
     name: 'Elena',
     title: 'AI Product Analyst',
-    nameField: 'Elena',
     domain: 'AI Product Strategy & ROI',
     icon: Layers,
     badge: 'Trending',
@@ -82,55 +81,66 @@ const TEMPLATES = [
 
 export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) => {
   return (
-    <div className="view-viewport-container" style={{ maxWidth: '1000px', margin: '0 auto', paddingBottom: '40px' }}>
-      <div style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>Autonomous Creator Templates</h3>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-          Launch pre-configured autonomous personas for instant topic discovery, editorial evaluation, and continuous publishing.
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '24px', paddingBottom: '40px' }}>
+      <div style={{ marginBottom: '24px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: '4px' }}>Autonomous Creator Templates</h3>
+        <p style={{ fontSize: '13px', color: '#9d9db8', lineHeight: 1.5 }}>
+          Launch pre-configured autonomous personas in one click for instant topic discovery, judgment, and publishing.
         </p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '18px' }}>
         {TEMPLATES.map((tmpl, i) => {
           const Icon = tmpl.icon;
           return (
             <motion.div
               key={i}
-              className="inspector-info-card"
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 16 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.04 }}
-              style={{ display: 'flex', flexDirection: 'column', gap: '12px', padding: '18px' }}
+              whileHover={{ y: -4, borderColor: 'rgba(99, 102, 241, 0.3)' }}
+              style={{
+                background: 'rgba(16, 16, 28, 0.75)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                borderRadius: '16px',
+                padding: '22px',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '14px',
+                backdropFilter: 'blur(16px)',
+                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+                position: 'relative',
+                overflow: 'hidden',
+              }}
             >
+              <div style={{
+                position: 'absolute', top: 0, left: 0, right: 0, height: '3px',
+                background: `linear-gradient(90deg, ${tmpl.color}, #6366f1)`,
+              }} />
+
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                  <div
-                    className="node-box-icon"
-                    style={{ background: `${tmpl.color}20`, color: tmpl.color }}
-                  >
-                    <Icon size={16} />
+                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <div style={{
+                    width: '40px', height: '40px', borderRadius: '10px',
+                    background: `${tmpl.color}20`, border: `1px solid ${tmpl.color}40`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: tmpl.color,
+                  }}>
+                    <Icon size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '14px', fontWeight: 700, color: '#fff' }}>{tmpl.title}</div>
-                    <div style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{tmpl.domain}</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>{tmpl.title}</div>
+                    <div style={{ fontSize: '11px', color: '#9d9db8' }}>{tmpl.domain}</div>
                   </div>
                 </div>
-                <span
-                  style={{
-                    fontSize: '10px',
-                    fontWeight: 700,
-                    padding: '2px 8px',
-                    borderRadius: '10px',
-                    background: 'rgba(139, 92, 246, 0.15)',
-                    color: 'var(--purple-light)',
-                    border: '1px solid rgba(139, 92, 246, 0.3)',
-                  }}
-                >
+                <span style={{
+                  fontSize: '10px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px',
+                  background: 'rgba(99, 102, 241, 0.12)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.25)',
+                }}>
                   {tmpl.badge}
                 </span>
               </div>
 
-              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.5' }}>
+              <div style={{ fontSize: '13px', color: '#9d9db8', lineHeight: 1.6, flex: 1 }}>
                 {tmpl.desc}
               </div>
 
@@ -139,11 +149,9 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) =
                   <span
                     key={idx}
                     style={{
-                      fontSize: '10px',
-                      color: 'var(--text-muted)',
-                      background: 'var(--bg-input)',
-                      padding: '2px 6px',
-                      borderRadius: '4px',
+                      fontSize: '10px', fontWeight: 600, color: '#71717a',
+                      background: 'rgba(20, 20, 32, 0.8)', padding: '2px 8px', borderRadius: '6px',
+                      border: '1px solid rgba(255, 255, 255, 0.05)',
                     }}
                   >
                     {t}
@@ -151,13 +159,20 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) =
                 ))}
               </div>
 
-              <button
-                className="btn btn-accent"
-                style={{ width: '100%', justifyContent: 'center', marginTop: '4px' }}
+              <motion.button
                 onClick={() => onUseTemplate(tmpl.name, tmpl.domain)}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                style={{
+                  width: '100%', padding: '10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                  border: 'none', borderRadius: '10px', color: '#ffffff', fontSize: '13px',
+                  fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+                  justifyContent: 'center', gap: '8px', boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)',
+                  marginTop: '6px',
+                }}
               >
-                Launch Creator ({tmpl.name}) <ArrowRight size={13} />
-              </button>
+                Launch Creator ({tmpl.name}) <ArrowRight size={14} />
+              </motion.button>
             </motion.div>
           );
         })}
@@ -165,4 +180,3 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) =
     </div>
   );
 };
-

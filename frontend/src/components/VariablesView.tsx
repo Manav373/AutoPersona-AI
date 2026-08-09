@@ -42,65 +42,93 @@ export const VariablesView: React.FC = () => {
   };
 
   return (
-    <div className="view-viewport-container" style={{ maxWidth: '850px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      <div>
-        <h3 style={{ fontSize: '16px', fontWeight: 700, color: '#fff' }}>Environment & Workflow Variables</h3>
-        <p style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
-          Configure system parameters, novelty thresholds, and autonomous publishing rules.
+    <div style={{ maxWidth: '850px', margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      <div style={{ marginBottom: '4px' }}>
+        <h3 style={{ fontSize: '18px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', marginBottom: '4px' }}>System Environment & Workflow Variables</h3>
+        <p style={{ fontSize: '13px', color: '#9d9db8', lineHeight: 1.5 }}>
+          Configure threshold parameters, novelty scoring minimums, and publishing cadence.
         </p>
       </div>
 
-      {/* Variables List */}
-      <div className="inspector-info-card" style={{ padding: '0', overflow: 'hidden' }}>
+      {/* Variables Table Card */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          background: 'rgba(16, 16, 28, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          overflow: 'hidden',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        }}
+      >
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '12px' }}>
           <thead>
-            <tr style={{ background: 'var(--bg-input)', borderBottom: '1px solid var(--border)', color: 'var(--text-muted)', fontSize: '10px', textTransform: 'uppercase' }}>
-              <th style={{ padding: '10px 14px' }}>Variable Key</th>
-              <th style={{ padding: '10px 14px' }}>Value</th>
-              <th style={{ padding: '10px 14px' }}>Scope</th>
-              <th style={{ padding: '10px 14px', textAlign: 'right' }}>Actions</th>
+            <tr style={{ background: 'rgba(20, 20, 32, 0.9)', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', color: '#71717a', fontSize: '10px', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              <th style={{ padding: '12px 16px' }}>Variable Key</th>
+              <th style={{ padding: '12px 16px' }}>Configured Value</th>
+              <th style={{ padding: '12px 16px' }}>Scope</th>
+              <th style={{ padding: '12px 16px', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {vars.map((v) => (
-              <tr key={v.key} style={{ borderBottom: '1px solid var(--border)' }}>
-                <td style={{ padding: '10px 14px', fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--purple)' }}>
+              <tr key={v.key} style={{ borderBottom: '1px solid rgba(255, 255, 255, 0.05)' }}>
+                <td style={{ padding: '12px 16px', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, color: '#818cf8' }}>
                   {v.key}
                 </td>
-                <td style={{ padding: '10px 14px', color: '#fff' }}>
+                <td style={{ padding: '12px 16px', color: '#ffffff' }}>
                   {editingKey === v.key ? (
                     <input
                       type="text"
-                      className="styled-inspector-input"
                       value={editVal}
                       onChange={(e) => setEditVal(e.target.value)}
-                      style={{ padding: '4px 8px' }}
+                      style={{
+                        padding: '6px 10px', background: 'rgba(20, 20, 32, 0.9)',
+                        border: '1px solid #6366f1', borderRadius: '6px',
+                        color: '#ffffff', fontSize: '12px', outline: 'none',
+                        fontFamily: 'JetBrains Mono, monospace',
+                      }}
                     />
                   ) : (
-                    v.value
+                    <span style={{ fontFamily: 'JetBrains Mono, monospace' }}>{v.value}</span>
                   )}
                 </td>
-                <td style={{ padding: '10px 14px', color: 'var(--text-muted)' }}>{v.scope}</td>
-                <td style={{ padding: '10px 14px', textAlign: 'right' }}>
+                <td style={{ padding: '12px 16px', color: '#9d9db8' }}>{v.scope}</td>
+                <td style={{ padding: '12px 16px', textAlign: 'right' }}>
                   {editingKey === v.key ? (
-                    <button className="btn btn-topbar-purple" style={{ padding: '3px 8px', fontSize: '10px' }} onClick={() => handleSaveEdit(v.key)}>
-                      <Save size={11} /> Save
+                    <button
+                      onClick={() => handleSaveEdit(v.key)}
+                      style={{
+                        padding: '4px 10px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                        border: 'none', borderRadius: '6px', color: '#ffffff', fontSize: '11px',
+                        fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '4px',
+                      }}
+                    >
+                      <Save size={12} /> Save
                     </button>
                   ) : (
                     <div style={{ display: 'flex', gap: '6px', justifyContent: 'flex-end' }}>
                       <button
-                        className="nav-icon-btn"
                         onClick={() => { setEditingKey(v.key); setEditVal(v.value); }}
                         title="Edit variable"
+                        style={{
+                          background: 'none', border: 'none', color: '#9d9db8', cursor: 'pointer',
+                          padding: '4px', borderRadius: '4px', display: 'flex',
+                        }}
                       >
-                        <Edit2 size={12} />
+                        <Edit2 size={13} />
                       </button>
                       <button
-                        className="nav-icon-btn"
                         onClick={() => handleDelete(v.key)}
                         title="Delete variable"
+                        style={{
+                          background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer',
+                          padding: '4px', borderRadius: '4px', display: 'flex',
+                        }}
                       >
-                        <Trash2 size={12} color="var(--red)" />
+                        <Trash2 size={13} />
                       </button>
                     </div>
                   )}
@@ -109,34 +137,66 @@ export const VariablesView: React.FC = () => {
             ))}
           </tbody>
         </table>
-      </div>
+      </motion.div>
 
-      {/* Add New Variable Form */}
-      <form onSubmit={handleAdd} className="inspector-info-card" style={{ display: 'flex', gap: '10px', alignItems: 'flex-end', padding: '14px' }}>
-        <div className="input-field-group" style={{ flex: 1 }}>
-          <label>New Variable Key</label>
+      {/* Add Variable Form Card */}
+      <motion.form
+        onSubmit={handleAdd}
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+        style={{
+          background: 'rgba(16, 16, 28, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '14px',
+          padding: '18px',
+          backdropFilter: 'blur(16px)',
+          display: 'flex',
+          gap: '12px',
+          alignItems: 'flex-end',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+        }}
+      >
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>New Variable Key</label>
           <input
             type="text"
-            className="styled-inspector-input"
             placeholder="e.g. MAX_DAILY_POSTS"
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
+            style={{
+              padding: '9px 12px', background: 'rgba(20, 20, 32, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
+              color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
+            }}
           />
         </div>
-        <div className="input-field-group" style={{ flex: 1 }}>
-          <label>Value</label>
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Configured Value</label>
           <input
             type="text"
-            className="styled-inspector-input"
             placeholder="e.g. 12"
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
+            style={{
+              padding: '9px 12px', background: 'rgba(20, 20, 32, 0.85)',
+              border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
+              color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
+            }}
           />
         </div>
-        <button type="submit" className="btn btn-topbar-purple" style={{ padding: '8px 14px' }}>
+        <button
+          type="submit"
+          style={{
+            padding: '10px 18px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            border: 'none', borderRadius: '8px', color: '#ffffff', fontSize: '12px',
+            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+            boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)',
+          }}
+        >
           <Plus size={14} /> Add Variable
         </button>
-      </form>
+      </motion.form>
     </div>
   );
 };

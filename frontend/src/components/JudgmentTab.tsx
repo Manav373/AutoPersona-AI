@@ -1,24 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import {
-  Scale,
-  CheckCircle2,
-  XCircle,
-  AlertCircle,
-  Play,
-  RefreshCw,
-  Search,
-  Database,
-  Sparkles,
-  Send,
-  Clock,
-  ChevronRight,
-  X,
-  FileText,
-  Filter,
-  ExternalLink,
-  Cpu,
-  Activity,
-  Layers,
+  Scale, CheckCircle2, XCircle, AlertCircle, Play, RefreshCw,
+  Search, Database, Sparkles, Send, Clock, ChevronRight, X,
+  FileText, Filter, ExternalLink, Cpu, Activity, Layers,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { TopicReview, Agent, RunLog, Post } from '../types';
@@ -67,12 +51,10 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRun, setSelectedRun] = useState<ExecutionRunItem | null>(null);
 
-  // Sync state if selectedAgentId prop changes from parent
   React.useEffect(() => {
     setFilterAgent(selectedAgentId);
   }, [selectedAgentId]);
 
-  // Group logs, reviews, and posts into unified Execution Runs
   const executionRuns = useMemo(() => {
     const items: ExecutionRunItem[] = [];
 
@@ -81,19 +63,16 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
         const agent = agentsMap.get(log.agentId);
         const name = agent ? agent.persona.name : `Agent ${log.agentId.slice(0, 6)}`;
         const domain = agent ? agent.persona.domain : 'General';
-
         const startTime = new Date(log.startedAt).getTime();
         const endTime = log.finishedAt ? new Date(log.finishedAt).getTime() : startTime;
         const durationSec = log.finishedAt ? Math.max(0.1, Number(((endTime - startTime) / 1000).toFixed(1))) : null;
 
-        // Find topic reviews that occurred around this run time (+/- 15 seconds)
         const correlatedReviews = reviews.filter((r) => {
           if (r.agentId !== log.agentId) return false;
           const rTime = new Date(r.reviewedAt).getTime();
           return Math.abs(rTime - startTime) < 30000 || Math.abs(rTime - endTime) < 30000;
         });
 
-        // Find post published around this run time
         const correlatedPost = posts.find((p) => {
           if (p.agentId && p.agentId !== log.agentId) return false;
           const pTime = new Date(p.createdAt).getTime();
@@ -115,7 +94,6 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
         });
       });
     } else if (reviews.length > 0) {
-      // Synthetic fallback from reviews if run logs table is empty
       reviews.forEach((review, index) => {
         const agent = agentsMap.get(review.agentId);
         const name = agent ? agent.persona.name : `Agent ${review.agentId.slice(0, 6)}`;
@@ -140,21 +118,14 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
     return items;
   }, [logs, reviews, posts, agentsMap]);
 
-  // Filtered runs
   const filteredRuns = useMemo(() => {
     return executionRuns.filter((run) => {
-      // Agent filter
-      if (filterAgent !== 'all' && run.agentId !== filterAgent) {
-        return false;
-      }
-
-      // Status filter
+      if (filterAgent !== 'all' && run.agentId !== filterAgent) return false;
       if (statusFilter === 'published' && run.outcome !== 'published') return false;
       if (statusFilter === 'skipped_dedup' && run.outcome !== 'skipped_dedup' && run.outcome !== 'skipped_near_duplicate') return false;
       if (statusFilter === 'skipped_rejected' && run.outcome !== 'skipped_all_rejected' && run.outcome !== 'skipped_no_candidates') return false;
       if (statusFilter === 'error' && run.outcome !== 'error') return false;
 
-      // Search filter
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchesName = run.agentName.toLowerCase().includes(q);
@@ -166,94 +137,94 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
           return false;
         }
       }
-
       return true;
     });
   }, [executionRuns, filterAgent, statusFilter, searchQuery]);
 
-  // System metrics stats
   const stats = useMemo(() => {
     const total = filteredRuns.length;
     const published = filteredRuns.filter((r) => r.outcome === 'published').length;
     const rejected = filteredRuns.filter((r) => r.outcome === 'skipped_all_rejected').length;
     const deduped = filteredRuns.filter((r) => r.outcome === 'skipped_dedup' || r.outcome === 'skipped_near_duplicate').length;
     const publishRate = total > 0 ? ((published / total) * 100).toFixed(0) : '0';
-
     const durations = filteredRuns.map((r) => r.durationSec).filter((d): d is number => d !== null);
     const avgDuration = durations.length > 0 ? (durations.reduce((a, b) => a + b, 0) / durations.length).toFixed(1) : '1.8';
-
-    const totalEvaluated = filterAgent === 'all'
-      ? reviews.length
-      : reviews.filter((r) => r.agentId === filterAgent).length;
+    const totalEvaluated = filterAgent === 'all' ? reviews.length : reviews.filter((r) => r.agentId === filterAgent).length;
 
     return { total, published, rejected, deduped, publishRate, avgDuration, totalEvaluated };
   }, [filteredRuns, reviews, filterAgent]);
 
   const getOutcomeBadge = (outcome: ExecutionRunItem['outcome']) => {
+    const badgeStyle: React.CSSProperties = {
+      display: 'inline-flex', alignItems: 'center', gap: '4px',
+      padding: '3px 9px', borderRadius: '12px', fontSize: '10px',
+      fontWeight: 700, letterSpacing: '0.5px', textTransform: 'uppercase',
+    };
+
     switch (outcome) {
       case 'published':
-        return (
-          <span className="execution-badge outcome-published">
-            <CheckCircle2 size={11} /> PUBLISHED
-          </span>
-        );
+        return <span style={{ ...badgeStyle, background: 'rgba(34, 197, 94, 0.15)', color: '#22c55e', border: '1px solid rgba(34, 197, 94, 0.3)' }}><CheckCircle2 size={11} /> PUBLISHED</span>;
       case 'skipped_dedup':
       case 'skipped_near_duplicate':
-        return (
-          <span className="execution-badge outcome-dedup">
-            <Database size={11} /> DEDUP SKIPPED
-          </span>
-        );
+        return <span style={{ ...badgeStyle, background: 'rgba(234, 179, 8, 0.15)', color: '#eab308', border: '1px solid rgba(234, 179, 8, 0.3)' }}><Database size={11} /> DEDUP SKIPPED</span>;
       case 'skipped_all_rejected':
       case 'skipped_no_candidates':
-        return (
-          <span className="execution-badge outcome-rejected">
-            <XCircle size={11} /> REJECTED
-          </span>
-        );
+        return <span style={{ ...badgeStyle, background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', border: '1px solid rgba(239, 68, 68, 0.3)' }}><XCircle size={11} /> REJECTED</span>;
       case 'error':
-        return (
-          <span className="execution-badge outcome-error">
-            <AlertCircle size={11} /> ERROR
-          </span>
-        );
+        return <span style={{ ...badgeStyle, background: 'rgba(225, 29, 72, 0.2)', color: '#fda4af', border: '1px solid rgba(225, 29, 72, 0.4)' }}><AlertCircle size={11} /> ERROR</span>;
       default:
-        return (
-          <span className="execution-badge outcome-other">
-            <Clock size={11} /> {String(outcome).replace(/_/g, ' ').toUpperCase()}
-          </span>
-        );
+        return <span style={{ ...badgeStyle, background: 'rgba(255, 255, 255, 0.08)', color: '#a1a1aa' }}><Clock size={11} /> {String(outcome).replace(/_/g, ' ')}</span>;
     }
   };
 
   return (
-    <div className="view-container execution-tab-container">
-      {/* 1. Header Controls & KPI Bar */}
-      <div className="execution-header-card">
-        <div className="execution-header-top">
-          <div className="execution-header-title">
-            <div className="pulse-live-indicator" title="Live Agent Execution Tracker Active">
-              <span className="pulse-dot" />
-              <Activity size={16} className="pulse-icon" />
+    <div style={{ maxWidth: '900px', margin: '0 auto', padding: '24px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+      {/* Header Controls & KPI Bar */}
+      <motion.div
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        style={{
+          background: 'rgba(16, 16, 28, 0.75)',
+          border: '1px solid rgba(255, 255, 255, 0.08)',
+          borderRadius: '16px',
+          padding: '22px',
+          backdropFilter: 'blur(16px)',
+          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '16px',
+        }}
+      >
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '40px', height: '40px', borderRadius: '10px',
+              background: 'rgba(139, 92, 246, 0.15)', border: '1px solid rgba(139, 92, 246, 0.3)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#a78bfa',
+              position: 'relative',
+            }}>
+              <Activity size={20} />
             </div>
             <div>
-              <h3>Real Agent Execution Audit</h3>
-              <p>Live, verified execution pipeline trace tested by persona agents</p>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>Real Agent Execution Audit</h3>
+              <p style={{ fontSize: '12px', color: '#9d9db8', margin: '2px 0 0' }}>Live, verified execution pipeline trace tested by persona agents</p>
             </div>
           </div>
 
-          <div className="execution-actions">
-            {/* Filter by Agent Dropdown */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' }}>
             {agents.length > 0 && (
               <select
-                className="execution-agent-select"
                 value={filterAgent}
                 onChange={(e) => {
                   const val = e.target.value;
                   setFilterAgent(val);
-                  if (onSelectAgent) {
-                    onSelectAgent(val);
-                  }
+                  if (onSelectAgent) onSelectAgent(val);
+                }}
+                style={{
+                  padding: '8px 12px', background: 'rgba(20, 20, 32, 0.85)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
+                  color: '#ffffff', fontSize: '12px', outline: 'none', cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif',
                 }}
               >
                 <option value="all">🌐 All Agent Personas ({agents.length})</option>
@@ -265,133 +236,127 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
               </select>
             )}
 
-            {/* Trigger Real Execution Button */}
             <button
-              className="btn-trigger-execution"
-              onClick={() => {
-                if (onTriggerCycle) onTriggerCycle();
-              }}
+              onClick={() => { if (onTriggerCycle) onTriggerCycle(); }}
               disabled={isTriggering}
+              style={{
+                display: 'flex', alignItems: 'center', gap: '6px', padding: '8px 16px',
+                background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', border: 'none',
+                borderRadius: '8px', color: '#ffffff', fontSize: '12px', fontWeight: 700,
+                cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+                boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)', opacity: isTriggering ? 0.7 : 1,
+              }}
             >
               {isTriggering ? (
-                <>
-                  <RefreshCw size={13} className="spin" /> Executing Pipeline...
-                </>
+                <><RefreshCw size={13} className="spin" /> Executing Pipeline...</>
               ) : (
-                <>
-                  <Play size={13} /> Run Real Execution Test
-                </>
+                <><Play size={13} /> Run Real Execution Test</>
               )}
             </button>
           </div>
         </div>
 
         {/* KPI Metrics Summary Bar */}
-        <div className="execution-kpi-bar">
-          <div className="kpi-mini-card">
-            <div className="kpi-mini-icon purple">
-              <Layers size={14} />
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
+          {[
+            { label: 'Total Executions', val: stats.total, icon: Layers, color: '#a78bfa', bg: 'rgba(139, 92, 246, 0.15)' },
+            { label: 'Publish Success Rate', val: `${stats.publishRate}%`, icon: CheckCircle2, color: '#22c55e', bg: 'rgba(34, 197, 94, 0.15)' },
+            { label: 'Topics Evaluated', val: stats.totalEvaluated, icon: Scale, color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.15)' },
+            { label: 'Avg Latency', val: `${stats.avgDuration}s`, icon: Clock, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)' },
+          ].map((kpi, idx) => (
+            <div key={idx} style={{
+              display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 12px',
+              background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.05)',
+              borderRadius: '8px',
+            }}>
+              <div style={{
+                width: '30px', height: '30px', borderRadius: '6px', background: kpi.bg,
+                display: 'flex', alignItems: 'center', justifyContent: 'center', color: kpi.color, flexShrink: 0,
+              }}>
+                <kpi.icon size={14} />
+              </div>
+              <div>
+                <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>{kpi.val}</div>
+                <div style={{ fontSize: '10px', color: '#71717a' }}>{kpi.label}</div>
+              </div>
             </div>
-            <div>
-              <div className="kpi-mini-val">{stats.total}</div>
-              <div className="kpi-mini-lbl">Total Executions</div>
-            </div>
-          </div>
-
-          <div className="kpi-mini-card">
-            <div className="kpi-mini-icon green">
-              <CheckCircle2 size={14} />
-            </div>
-            <div>
-              <div className="kpi-mini-val">{stats.publishRate}%</div>
-              <div className="kpi-mini-lbl">Publish Success Rate</div>
-            </div>
-          </div>
-
-          <div className="kpi-mini-card">
-            <div className="kpi-mini-icon blue">
-              <Scale size={14} />
-            </div>
-            <div>
-              <div className="kpi-mini-val">{stats.totalEvaluated}</div>
-              <div className="kpi-mini-lbl">Topics Evaluated</div>
-            </div>
-          </div>
-
-          <div className="kpi-mini-card">
-            <div className="kpi-mini-icon amber">
-              <Clock size={14} />
-            </div>
-            <div>
-              <div className="kpi-mini-val">{stats.avgDuration}s</div>
-              <div className="kpi-mini-lbl">Avg Latency</div>
-            </div>
-          </div>
+          ))}
         </div>
 
         {/* Filter Controls Bar */}
-        <div className="execution-filter-row">
-          <div className="execution-status-tabs">
-            <button
-              className={`status-tab-btn ${statusFilter === 'all' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('all')}
-            >
-              All Runs ({executionRuns.length})
-            </button>
-            <button
-              className={`status-tab-btn ${statusFilter === 'published' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('published')}
-            >
-              Published ({stats.published})
-            </button>
-            <button
-              className={`status-tab-btn ${statusFilter === 'skipped_dedup' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('skipped_dedup')}
-            >
-              Dedup Skipped ({stats.deduped})
-            </button>
-            <button
-              className={`status-tab-btn ${statusFilter === 'skipped_rejected' ? 'active' : ''}`}
-              onClick={() => setStatusFilter('skipped_rejected')}
-            >
-              Rejected ({stats.rejected})
-            </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '14px', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flexWrap: 'wrap' }}>
+            {[
+              { key: 'all', label: `All Runs (${executionRuns.length})` },
+              { key: 'published', label: `Published (${stats.published})` },
+              { key: 'skipped_dedup', label: `Dedup Skipped (${stats.deduped})` },
+              { key: 'skipped_rejected', label: `Rejected (${stats.rejected})` },
+            ].map((t) => (
+              <button
+                key={t.key}
+                onClick={() => setStatusFilter(t.key as StatusFilter)}
+                style={{
+                  background: statusFilter === t.key ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  border: statusFilter === t.key ? '1px solid rgba(99, 102, 241, 0.3)' : '1px solid transparent',
+                  borderRadius: '14px', color: statusFilter === t.key ? '#818cf8' : '#a1a1aa',
+                  fontSize: '11px', fontWeight: 600, padding: '4px 12px', cursor: 'pointer',
+                  fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                {t.label}
+              </button>
+            ))}
           </div>
 
-          <div className="execution-search-wrapper">
-            <Search size={13} className="search-icon" />
+          <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+            <Search size={13} style={{ position: 'absolute', left: '10px', color: '#71717a', pointerEvents: 'none' }} />
             <input
               type="text"
-              placeholder="Search candidate topics, rationale, or persona..."
+              placeholder="Search topics, rationale, or persona..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="execution-search-input"
+              style={{
+                padding: '6px 28px', background: 'rgba(20, 20, 32, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
+                color: '#ffffff', fontSize: '11px', outline: 'none', width: '220px',
+                fontFamily: 'Inter, sans-serif',
+              }}
             />
             {searchQuery && (
-              <button className="clear-search-btn" onClick={() => setSearchQuery('')}>
+              <button onClick={() => setSearchQuery('')} style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: '#71717a', cursor: 'pointer' }}>
                 <X size={12} />
               </button>
             )}
           </div>
         </div>
-      </div>
+      </motion.div>
 
-      {/* 2. Execution Run Feed */}
+      {/* Execution Run Feed */}
       {filteredRuns.length === 0 ? (
-        <div className="empty-state-execution">
-          <Scale size={32} color="#6b7280" />
-          <h4>No Executions Match Filter</h4>
-          <p>Click "Run Real Execution Test" to trigger an autonomous cycle tested by the AI agent.</p>
-          <button className="btn-trigger-execution" style={{ marginTop: '12px' }} onClick={onTriggerCycle}>
+        <div style={{
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          gap: '10px', padding: '60px 20px', textAlign: 'center', background: 'rgba(16, 16, 28, 0.5)',
+          border: '1px dashed rgba(255, 255, 255, 0.08)', borderRadius: '16px',
+        }}>
+          <Scale size={32} color="#71717a" />
+          <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>No Executions Match Filter</h4>
+          <p style={{ fontSize: '12px', color: '#71717a', margin: 0 }}>Click "Run Real Execution Test" to trigger an autonomous cycle tested by the AI agent.</p>
+          <button
+            onClick={onTriggerCycle}
+            style={{
+              marginTop: '8px', padding: '8px 16px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+              border: 'none', borderRadius: '8px', color: '#ffffff', fontSize: '12px', fontWeight: 700,
+              cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
+            }}
+          >
             <Play size={13} /> Trigger First Real Test Execution
           </button>
         </div>
       ) : (
-        <div className="execution-run-list">
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
           {filteredRuns.map((run, index) => {
             const timeStr = new Date(run.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             const dateStr = new Date(run.timestamp).toLocaleDateString([], { month: 'short', day: 'numeric' });
-
             const firstReview = run.reviews[0];
             const candidateTitle = firstReview?.candidateTitle || run.publishedPost?.topicKey || 'Autonomous Topic Candidate';
             const novelty = typeof firstReview?.noveltyScore === 'number' ? firstReview.noveltyScore : 0.85;
@@ -400,146 +365,66 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
             return (
               <motion.div
                 key={run.id}
-                className="execution-run-card"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.03, duration: 0.25 }}
                 onClick={() => setSelectedRun(run)}
+                style={{
+                  background: 'rgba(16, 16, 28, 0.75)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  borderRadius: '16px',
+                  padding: '18px 20px',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '12px',
+                  cursor: 'pointer',
+                  backdropFilter: 'blur(16px)',
+                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.3)',
+                }}
               >
-                {/* Top Card Info Bar */}
-                <div className="run-card-header">
-                  <div className="run-id-agent">
-                    <span className="run-id-pill">{run.id}</span>
-                    <span className="run-agent-name">🤖 {run.agentName}</span>
-                    <span className="run-agent-domain">[{run.agentDomain}]</span>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{
+                      background: 'rgba(255, 255, 255, 0.08)', color: '#a1a1aa',
+                      fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700,
+                      padding: '2px 7px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.06)',
+                    }}>
+                      {run.id}
+                    </span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>🤖 {run.agentName}</span>
+                    <span style={{ fontSize: '11px', color: '#71717a' }}>[{run.agentDomain}]</span>
                   </div>
 
-                  <div className="run-header-right">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {run.durationSec !== null && (
-                      <span className="run-duration-tag">
+                      <span style={{ fontSize: '11px', color: '#71717a', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={10} /> {run.durationSec}s
                       </span>
                     )}
-                    <span className="run-timestamp-tag">{dateStr} {timeStr}</span>
+                    <span style={{ fontSize: '11px', color: '#71717a' }}>{dateStr} {timeStr}</span>
                     {getOutcomeBadge(run.outcome)}
                   </div>
                 </div>
 
-                {/* Card Title & Rationale */}
-                <div className="run-card-body">
-                  <div className="run-topic-title">
-                    {candidateTitle}
-                  </div>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{candidateTitle}</div>
 
                   {firstReview?.reason && (
-                    <div className="run-editorial-reason">
+                    <div style={{
+                      fontSize: '12px', color: '#a1a1aa', fontStyle: 'italic',
+                      background: 'rgba(255, 255, 255, 0.03)', padding: '6px 10px',
+                      borderRadius: '6px', borderLeft: '2px solid #6366f1',
+                    }}>
                       "💬 Judge Verdict: {firstReview.reason}"
                     </div>
                   )}
 
                   {run.publishedPost && (
-                    <div className="run-post-snippet">
+                    <div style={{
+                      fontSize: '12px', color: '#cbd5e1', background: 'rgba(34, 197, 94, 0.05)',
+                      border: '1px solid rgba(34, 197, 94, 0.15)', padding: '8px 12px', borderRadius: '6px',
+                    }}>
                       📝 Published Post Draft: "{run.publishedPost.text.slice(0, 140)}..."
-                    </div>
-                  )}
-
-                  {/* 3. Visual Step Pipeline Node Trace */}
-                  <div className="visual-pipeline-container">
-                    <div className="pipeline-title-lbl">EXECUTION PIPELINE NODE TRACE</div>
-                    <div className="pipeline-steps-row">
-                      {/* Step 1: Trigger / Schedule */}
-                      <div className="pipeline-step-node pass" title="Step 1: Cycle Triggered">
-                        <div className="step-icon"><Clock size={11} /></div>
-                        <span className="step-lbl">1. Trigger</span>
-                      </div>
-                      <ChevronRight size={12} className="pipeline-arrow" />
-
-                      {/* Step 2: Discovery / Search */}
-                      <div className="pipeline-step-node pass" title="Step 2: Candidate News Topics Discovered">
-                        <div className="step-icon"><Search size={11} /></div>
-                        <span className="step-lbl">2. Discovery</span>
-                      </div>
-                      <ChevronRight size={12} className="pipeline-arrow" />
-
-                      {/* Step 3: Editorial Judgment */}
-                      <div
-                        className={`pipeline-step-node ${
-                          run.outcome === 'skipped_all_rejected' || run.outcome === 'skipped_no_candidates'
-                            ? 'fail'
-                            : 'pass'
-                        }`}
-                        title={`Step 3: Judgment Scored Novelty ${(novelty * 100).toFixed(0)}%`}
-                      >
-                        <div className="step-icon"><Scale size={11} /></div>
-                        <span className="step-lbl">3. Judgment</span>
-                      </div>
-                      <ChevronRight size={12} className="pipeline-arrow" />
-
-                      {/* Step 4: AI Voice Writing */}
-                      <div
-                        className={`pipeline-step-node ${
-                          run.outcome === 'skipped_all_rejected'
-                            ? 'dim'
-                            : run.outcome === 'published'
-                            ? 'pass'
-                            : 'pass'
-                        }`}
-                        title="Step 4: Persona Voice Writing"
-                      >
-                        <div className="step-icon"><Cpu size={11} /></div>
-                        <span className="step-lbl">4. Synthesizer</span>
-                      </div>
-                      <ChevronRight size={12} className="pipeline-arrow" />
-
-                      {/* Step 5: SQLite Memory Dedup */}
-                      <div
-                        className={`pipeline-step-node ${
-                          run.outcome === 'skipped_dedup' || run.outcome === 'skipped_near_duplicate'
-                            ? 'warn'
-                            : run.outcome === 'skipped_all_rejected'
-                            ? 'dim'
-                            : 'pass'
-                        }`}
-                        title="Step 5: Memory Dedup Check"
-                      >
-                        <div className="step-icon"><Database size={11} /></div>
-                        <span className="step-lbl">5. Memory</span>
-                      </div>
-                      <ChevronRight size={12} className="pipeline-arrow" />
-
-                      {/* Step 6: Publish Output */}
-                      <div
-                        className={`pipeline-step-node ${run.outcome === 'published' ? 'pass' : 'dim'}`}
-                        title="Step 6: Published to Feed"
-                      >
-                        <div className="step-icon"><Send size={11} /></div>
-                        <span className="step-lbl">6. Publish</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Score progress bars */}
-                  {firstReview && (
-                    <div className="run-scores-row">
-                      <div className="score-col">
-                        <div className="score-top-lbl">
-                          <span>Novelty Score</span>
-                          <span>{(novelty * 100).toFixed(0)}%</span>
-                        </div>
-                        <div className="score-track-bg">
-                          <div className="score-fill-purple" style={{ width: `${novelty * 100}%` }} />
-                        </div>
-                      </div>
-
-                      <div className="score-col">
-                        <div className="score-top-lbl">
-                          <span>Relevance Score</span>
-                          <span>{(relevance * 100).toFixed(0)}%</span>
-                        </div>
-                        <div className="score-track-bg">
-                          <div className="score-fill-green" style={{ width: `${relevance * 100}%` }} />
-                        </div>
-                      </div>
                     </div>
                   )}
                 </div>
@@ -549,103 +434,65 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
         </div>
       )}
 
-      {/* 4. Execution Detail Modal Drawer */}
+      {/* Execution Detail Modal */}
       <AnimatePresence>
         {selectedRun && (
-          <div className="modal-backdrop" onClick={() => setSelectedRun(null)}>
+          <div
+            onClick={() => setSelectedRun(null)}
+            style={{
+              position: 'fixed', inset: 0, background: 'rgba(0, 0, 0, 0.75)',
+              backdropFilter: 'blur(8px)', zIndex: 1000, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', padding: '20px',
+            }}
+          >
             <motion.div
-              className="execution-detail-modal"
               initial={{ scale: 0.95, opacity: 0, y: 10 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 10 }}
               onClick={(e) => e.stopPropagation()}
+              style={{
+                background: '#0d0d14', border: '1px solid rgba(255, 255, 255, 0.1)',
+                borderRadius: '20px', width: '100%', maxWidth: '680px', maxHeight: '85vh',
+                display: 'flex', flexDirection: 'column', overflow: 'hidden',
+                boxShadow: '0 24px 80px rgba(0, 0, 0, 0.8)',
+              }}
             >
-              <div className="modal-topbar">
-                <div className="modal-title-wrap">
-                  <span className="modal-run-id">{selectedRun.id}</span>
-                  <h4>Real Execution Details</h4>
+              <div style={{ padding: '16px 20px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <span style={{ background: 'rgba(99, 102, 241, 0.15)', color: '#818cf8', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700, padding: '3px 8px', borderRadius: '4px' }}>
+                    {selectedRun.id}
+                  </span>
+                  <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>Real Execution Details</h4>
                 </div>
-                <button className="modal-close-btn" onClick={() => setSelectedRun(null)}>
+                <button onClick={() => setSelectedRun(null)} style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }}>
                   <X size={16} />
                 </button>
               </div>
 
-              <div className="modal-body-scroll">
-                {/* Meta details */}
-                <div className="detail-meta-grid">
-                  <div className="meta-item">
-                    <span className="meta-lbl">Agent Persona</span>
-                    <span className="meta-val">🤖 {selectedRun.agentName}</span>
-                  </div>
-                  <div className="meta-item">
-                    <span className="meta-lbl">Domain</span>
-                    <span className="meta-val">{selectedRun.agentDomain}</span>
-                  </div>
-                  <div className="meta-item">
-                    <span className="meta-lbl">Executed At</span>
-                    <span className="meta-val">{new Date(selectedRun.timestamp).toLocaleString()}</span>
-                  </div>
-                  <div className="meta-item">
-                    <span className="meta-lbl">Execution Status</span>
-                    <span className="meta-val">{getOutcomeBadge(selectedRun.outcome)}</span>
-                  </div>
+              <div style={{ padding: '20px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '18px' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '10px', padding: '12px 16px' }}>
+                  <div><div style={{ fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 700 }}>Agent Persona</div><div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>🤖 {selectedRun.agentName}</div></div>
+                  <div><div style={{ fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 700 }}>Domain</div><div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>{selectedRun.agentDomain}</div></div>
+                  <div><div style={{ fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 700 }}>Executed At</div><div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>{new Date(selectedRun.timestamp).toLocaleString()}</div></div>
+                  <div><div style={{ fontSize: '10px', color: '#71717a', textTransform: 'uppercase', fontWeight: 700 }}>Execution Status</div><div>{getOutcomeBadge(selectedRun.outcome)}</div></div>
                 </div>
 
-                {/* Candidate Topics Evaluated */}
                 {selectedRun.reviews.length > 0 && (
-                  <div className="modal-section">
-                    <div className="section-header">
-                      <Scale size={14} color="#8b5cf6" />
-                      <h5>Candidate Topics Tested by AI Judge</h5>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>
+                      <Scale size={14} color="#8b5cf6" /> Candidate Topics Tested by AI Judge
                     </div>
                     {selectedRun.reviews.map((rev, i) => (
-                      <div key={i} className="detail-review-card">
-                        <div className="review-top-line">
-                          <span className={`verdict-chip ${rev.verdict}`}>
+                      <div key={i} style={{ background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)', borderRadius: '10px', padding: '12px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                          <span style={{ fontSize: '10px', fontWeight: 700, padding: '2px 8px', borderRadius: '100px', background: rev.verdict === 'accept' ? 'rgba(34, 197, 94, 0.15)' : 'rgba(239, 68, 68, 0.15)', color: rev.verdict === 'accept' ? '#22c55e' : '#ef4444' }}>
                             {rev.verdict === 'accept' ? 'ACCEPTED' : 'REJECTED'}
                           </span>
-                          <span className="candidate-title-bold">{rev.candidateTitle || 'Untitled Topic'}</span>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>{rev.candidateTitle || 'Untitled Topic'}</span>
                         </div>
-                        {rev.reason && <p className="review-reason-text">"{rev.reason}"</p>}
-                        {rev.candidateUrl && (
-                          <a href={rev.candidateUrl} target="_blank" rel="noreferrer" className="candidate-link">
-                            <ExternalLink size={11} /> Source Article: {rev.candidateUrl}
-                          </a>
-                        )}
+                        {rev.reason && <p style={{ fontSize: '12px', color: '#9d9db8', fontStyle: 'italic', margin: 0 }}>"{rev.reason}"</p>}
                       </div>
                     ))}
-                  </div>
-                )}
-
-                {/* Published Post Content */}
-                {selectedRun.publishedPost && (
-                  <div className="modal-section">
-                    <div className="section-header">
-                      <Sparkles size={14} color="#10b981" />
-                      <h5>Generated Editorial Post</h5>
-                    </div>
-                    <div className="detail-post-box">
-                      <p className="post-text">{selectedRun.publishedPost.text}</p>
-                      <div className="post-rationale">
-                        <strong>Editorial Rationale:</strong> {selectedRun.publishedPost.rationale}
-                      </div>
-                      {selectedRun.publishedPost.sources && selectedRun.publishedPost.sources.length > 0 && (
-                        <div className="post-sources">
-                          <strong>Sources:</strong> {selectedRun.publishedPost.sources.join(', ')}
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Raw Execution Log */}
-                {selectedRun.detail && (
-                  <div className="modal-section">
-                    <div className="section-header">
-                      <FileText size={14} color="#94a3b8" />
-                      <h5>Raw Log Execution Message</h5>
-                    </div>
-                    <pre className="detail-log-pre">{selectedRun.detail}</pre>
                   </div>
                 )}
               </div>

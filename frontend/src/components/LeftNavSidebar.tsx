@@ -1,9 +1,10 @@
 import React from 'react';
 import {
-  Zap, Home, Newspaper, ListChecks, Workflow,
+  Sparkles, Home, Newspaper, ListChecks, Workflow,
   LayoutDashboard, KeyRound, Variable, Settings, Plus,
   ChevronDown, Sun, HelpCircle, LogOut,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { Agent } from '../types';
 
 export type NavView = 'overview' | 'feed' | 'executions' | 'workflows' | 'templates' | 'persona' | 'credentials' | 'variables' | 'settings';
@@ -18,6 +19,17 @@ interface LeftNavSidebarProps {
   postsCount: number;
 }
 
+const navItems: { view: NavView; icon: React.ElementType; label: string; section: 'nav' | 'system' }[] = [
+  { view: 'overview', icon: Home, label: 'Overview', section: 'nav' },
+  { view: 'feed', icon: Newspaper, label: 'Feed', section: 'nav' },
+  { view: 'executions', icon: ListChecks, label: 'Executions', section: 'nav' },
+  { view: 'workflows', icon: Workflow, label: 'Workflows', section: 'nav' },
+  { view: 'templates', icon: LayoutDashboard, label: 'Templates', section: 'nav' },
+  { view: 'credentials', icon: KeyRound, label: 'Credentials', section: 'system' },
+  { view: 'variables', icon: Variable, label: 'Variables', section: 'system' },
+  { view: 'settings', icon: Settings, label: 'Logs', section: 'system' },
+];
+
 export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
   agents,
   selectedAgentId,
@@ -27,119 +39,180 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
   onOpenCreateModal,
   postsCount,
 }) => {
+  const navGroup = navItems.filter((n) => n.section === 'nav');
+  const systemGroup = navItems.filter((n) => n.section === 'system');
+
   return (
-    <aside className="left-nav-sidebar">
-      <div>
+    <aside style={{
+      width: '220px', minWidth: '220px', background: '#09090b',
+      borderRight: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+      flexDirection: 'column', height: '100vh', zIndex: 20, justifyContent: 'space-between',
+    }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {/* Brand Header */}
-        <div className="nav-brand-header">
-          <div className="brand-logo-icon">
-            <Zap size={16} fill="#fff" color="#fff" />
+        <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '8px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 0 12px rgba(99, 102, 241, 0.35)', flexShrink: 0,
+          }}>
+            <Sparkles size={15} color="#fff" />
           </div>
-          <span className="brand-title">AutoPersona AI</span>
+          <span style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>AutoPersona</span>
         </div>
 
         {/* Main Menu Links */}
-        <div className="nav-menu-list">
-          <button
-            className={`nav-link-btn ${activeView === 'overview' ? 'active' : ''}`}
-            onClick={() => onChangeView('overview')}
-          >
-            <Home size={15} /> Overview
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'feed' ? 'active' : ''}`}
-            onClick={() => onChangeView('feed')}
-          >
-            <Newspaper size={15} /> Feed
-            {postsCount > 0 && <span className="nav-count-badge">{postsCount}</span>}
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'executions' ? 'active' : ''}`}
-            onClick={() => onChangeView('executions')}
-          >
-            <ListChecks size={15} /> Executions
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'workflows' ? 'active' : ''}`}
-            onClick={() => onChangeView('workflows')}
-          >
-            <Workflow size={15} /> Workflows
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'templates' ? 'active' : ''}`}
-            onClick={() => onChangeView('templates')}
-          >
-            <LayoutDashboard size={15} /> Templates
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'credentials' ? 'active' : ''}`}
-            onClick={() => onChangeView('credentials')}
-          >
-            <KeyRound size={15} /> Credentials
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'variables' ? 'active' : ''}`}
-            onClick={() => onChangeView('variables')}
-          >
-            <Variable size={15} /> Variables
-          </button>
-
-          <button
-            className={`nav-link-btn ${activeView === 'settings' ? 'active' : ''}`}
-            onClick={() => onChangeView('settings')}
-          >
-            <Settings size={15} /> Settings
-          </button>
-        </div>
-
-        {/* YOUR AGENTS */}
-        <div className="nav-section-title">YOUR AGENTS</div>
-        <div className="agent-nav-list">
-          {agents.map((agent, i) => {
-            const isActive = selectedAgentId === agent.agentId;
+        <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
+          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 12px 4px' }}>
+            Navigation
+          </div>
+          {navGroup.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.view;
             return (
-              <button
-                key={agent.agentId}
-                className={`agent-nav-item ${isActive ? 'active' : ''}`}
-                onClick={() => {
-                  onSelectAgent(agent.agentId);
-                  onChangeView('persona');
+              <motion.button
+                key={item.view}
+                onClick={() => onChangeView(item.view)}
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
+                  borderRadius: '6px', color: isActive ? '#ffffff' : '#71717a', fontSize: '12px',
+                  fontWeight: isActive ? 700 : 500, cursor: 'pointer', border: 'none',
+                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  width: '100%', textAlign: 'left', position: 'relative', fontFamily: 'Inter, sans-serif',
                 }}
               >
-                <div className="agent-avatar-img">{agent.persona.name[0]}</div>
-                <span className="agent-nav-name">{agent.persona.name}</span>
-                <span className={`status-dot-indicator ${agent.status === 'active' ? '' : 'offline'}`} />
-              </button>
+                <Icon size={14} color={isActive ? '#818cf8' : '#71717a'} />
+                {item.label}
+                {item.view === 'feed' && postsCount > 0 && (
+                  <span style={{
+                    marginLeft: 'auto', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    color: '#ffffff', fontSize: '10px', fontWeight: 700, padding: '1px 7px', borderRadius: '100px',
+                  }}>
+                    {postsCount}
+                  </span>
+                )}
+              </motion.button>
             );
           })}
-        </div>
 
-        <button className="btn-create-agent-nav" onClick={onOpenCreateModal}>
-          <Plus size={14} /> Create New Agent
-        </button>
+          <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.06)', margin: '8px 12px' }} />
+
+          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '4px 12px' }}>
+            System
+          </div>
+          {systemGroup.map((item) => {
+            const Icon = item.icon;
+            const isActive = activeView === item.view;
+            return (
+              <motion.button
+                key={item.view}
+                onClick={() => onChangeView(item.view)}
+                whileHover={{ x: 2 }}
+                whileTap={{ scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
+                  borderRadius: '6px', color: isActive ? '#ffffff' : '#71717a', fontSize: '12px',
+                  fontWeight: isActive ? 700 : 500, cursor: 'pointer', border: 'none',
+                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  width: '100%', textAlign: 'left', fontFamily: 'Inter, sans-serif',
+                }}
+              >
+                <Icon size={14} color={isActive ? '#818cf8' : '#71717a'} />
+                {item.label}
+              </motion.button>
+            );
+          })}
+
+          {/* YOUR AGENTS */}
+          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '12px 12px 4px' }}>
+            Agents
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
+            {agents.map((agent) => {
+              const isActive = selectedAgentId === agent.agentId;
+              return (
+                <motion.button
+                  key={agent.agentId}
+                  onClick={() => {
+                    onSelectAgent(agent.agentId);
+                    onChangeView('persona');
+                  }}
+                  whileHover={{ x: 2 }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 10px',
+                    borderRadius: '8px', cursor: 'pointer', border: 'none',
+                    background: isActive ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
+                    width: '100%', textAlign: 'left', color: isActive ? '#ffffff' : '#a1a1aa',
+                    fontFamily: 'Inter, sans-serif',
+                  }}
+                >
+                  <div style={{
+                    width: '24px', height: '24px', borderRadius: '50%',
+                    background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontSize: '10px', fontWeight: 700, color: '#ffffff', flexShrink: 0,
+                  }}>
+                    {agent.persona.name[0]}
+                  </div>
+                  <span style={{ fontSize: '12px', fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', flex: 1 }}>
+                    {agent.persona.name}
+                  </span>
+                  <span style={{
+                    width: '6px', height: '6px', borderRadius: '50%',
+                    background: agent.status === 'active' ? '#22c55e' : '#71717a',
+                    flexShrink: 0,
+                  }} />
+                </motion.button>
+              );
+            })}
+          </div>
+
+          <motion.button
+            onClick={onOpenCreateModal}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
+            style={{
+              margin: '10px 4px 4px', padding: '8px 12px', display: 'flex',
+              alignItems: 'center', justifyContent: 'center', gap: '6px',
+              background: 'rgba(99, 102, 241, 0.08)', color: '#818cf8',
+              border: '1px dashed rgba(99, 102, 241, 0.25)', borderRadius: '6px',
+              fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            <Plus size={13} /> New Agent
+          </motion.button>
+        </div>
       </div>
 
-      {/* Profile Footer & Bottom Toolbar Pinned to Bottom */}
-      <div className="nav-profile-section">
-        <div className="nav-profile-footer">
-          <div className="profile-avatar-circle">A</div>
-          <div className="profile-info-box">
-            <div className="profile-user-name">Aarav Mehta</div>
-            <div className="profile-user-plan">Pro Plan</div>
+      {/* Profile Footer */}
+      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            width: '28px', height: '28px', borderRadius: '50%',
+            background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            fontWeight: 700, fontSize: '11px', color: '#ffffff',
+          }}>
+            A
           </div>
-          <ChevronDown size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>Aarav Mehta</div>
+            <div style={{ fontSize: '10px', color: '#71717a' }}>Pro Plan</div>
+          </div>
+          <ChevronDown size={14} color="#71717a" style={{ cursor: 'pointer' }} />
         </div>
 
-        <div className="nav-bottom-toolbar">
-          <button className="nav-icon-btn" title="Theme"><Sun size={14} /></button>
-          <button className="nav-icon-btn" title="Help"><HelpCircle size={14} /></button>
-          <button className="nav-icon-btn" title="Logout"><LogOut size={14} /></button>
+        <div style={{ padding: '8px 14px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Theme"><Sun size={13} /></button>
+          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Help"><HelpCircle size={13} /></button>
+          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Logout"><LogOut size={13} /></button>
         </div>
       </div>
     </aside>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SelectedNodeInfo, CanvasNodeData, ConnectionData } from './WorkflowCanvas';
 import { SystemStats, Agent, RunLog, TopicReview } from '../types';
 import { Clock, ExternalLink, Link2, PanelRightClose, PanelRightOpen, RefreshCw, CheckCircle2, Play, Cpu, Database, Sparkles, Scale, Search } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface RightInspectorPanelProps {
   selectedNode: SelectedNodeInfo | null;
@@ -36,7 +37,6 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
   const [isTestingNode, setIsTestingNode] = useState(false);
   const [testOutput, setTestOutput] = useState<string | null>(null);
 
-  // Settings State
   const [onErrorAction, setOnErrorAction] = useState<'stop' | 'continue'>('stop');
   const [retryAttempts, setRetryAttempts] = useState<number>(2);
 
@@ -81,7 +81,6 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
     }
   };
 
-  // Real Node Test Execution
   const handleTestNode = async () => {
     setIsTestingNode(true);
     setTestOutput(null);
@@ -111,7 +110,6 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
   const Icon = node.icon || Clock;
   const targetNodeOptions = allNodes.filter((n) => n.id !== node.id);
 
-  // Format real next execution time
   const formatNextExecution = () => {
     if (!selectedAgent) return 'On-Demand';
     if (selectedAgent.status === 'stopped') return 'Paused (Manual Only)';
@@ -126,22 +124,27 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
 
   if (isCollapsed) {
     return (
-      <aside className="right-inspector-panel collapsed">
-        <div className="inspector-topbar collapsed">
+      <aside style={{
+        width: '48px', minWidth: '48px', background: '#0d0d10',
+        borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+        flexDirection: 'column', height: '100vh', zIndex: 15, alignItems: 'center',
+        transition: 'all 0.2s ease',
+      }}>
+        <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center', width: '100%' }}>
           <button
-            className="inspector-toggle-btn"
             onClick={() => setIsCollapsed(false)}
             title="Open Right Inspector Panel"
+            style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}
           >
             <PanelRightOpen size={16} />
           </button>
         </div>
 
-        <div className="inspector-collapsed-icons">
+        <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
           <button
-            className="inspector-collapsed-node-btn"
             onClick={() => setIsCollapsed(false)}
             title={`Selected Node: ${node.title}`}
+            style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
           >
             <Icon size={16} />
           </button>
@@ -151,34 +154,52 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
   }
 
   return (
-    <aside className="right-inspector-panel">
+    <aside style={{
+      width: '320px', minWidth: '320px', background: '#0d0d10',
+      borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+      flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
+    }}>
       {/* Topbar with Executions Button & Collapse Toggle */}
-      <div className="inspector-topbar">
-        <button className="btn-executions-top" onClick={onOpenExecutions}>
+      <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
+        <button
+          onClick={onOpenExecutions}
+          style={{
+            padding: '5px 12px', background: 'rgba(99, 102, 241, 0.1)',
+            border: '1px solid rgba(99, 102, 241, 0.25)', color: '#818cf8',
+            borderRadius: '6px', fontSize: '11px', fontWeight: 600, cursor: 'pointer',
+            fontFamily: 'Inter, sans-serif',
+          }}
+        >
           <span>⚙ Executions</span>
         </button>
         <button
-          className="inspector-toggle-btn"
           onClick={() => setIsCollapsed(true)}
           title="Close Inspector Panel"
+          style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}
         >
           <PanelRightClose size={15} />
         </button>
       </div>
 
       {/* Node Header */}
-      <div className="inspector-node-header">
-        <div className="inspector-title-group">
-          <div className="inspector-icon-box">
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(34, 197, 94, 0.12)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon size={15} />
           </div>
-          <span className="inspector-node-title">{node.title}</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>{node.title}</span>
         </div>
-        <button className="btn-test-node" onClick={handleTestNode} disabled={isTestingNode}>
+        <button
+          onClick={handleTestNode}
+          disabled={isTestingNode}
+          style={{
+            padding: '5px 12px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            color: '#ffffff', border: 'none', borderRadius: '6px', fontSize: '11px',
+            fontWeight: 700, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+          }}
+        >
           {isTestingNode ? (
-            <>
-              <RefreshCw size={11} className="spin" /> Testing...
-            </>
+            <><RefreshCw size={11} className="spin" /> Testing...</>
           ) : (
             'Test Node'
           )}
@@ -187,45 +208,45 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
 
       {/* Test Node Result Banner */}
       {testOutput && (
-        <div className="node-test-result-box">
-          <p>{testOutput}</p>
+        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '6px', padding: '10px 12px', margin: '10px 16px 0' }}>
+          <p style={{ fontSize: '11px', color: '#22c55e', lineHeight: 1.4, margin: 0, fontWeight: 500 }}>{testOutput}</p>
         </div>
       )}
 
       {/* Inspector Tabs */}
-      <div className="inspector-tab-row">
-        <button
-          className={`inspector-tab ${activeTab === 'parameters' ? 'active' : ''}`}
-          onClick={() => setActiveTab('parameters')}
-        >
-          Parameters
-        </button>
-        <button
-          className={`inspector-tab ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          Settings
-        </button>
-        <button
-          className={`inspector-tab ${activeTab === 'docs' ? 'active' : ''}`}
-          onClick={() => setActiveTab('docs')}
-        >
-          Docs <ExternalLink size={10} style={{ marginLeft: '2px' }} />
-        </button>
+      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', padding: '0 16px' }}>
+        {[
+          { key: 'parameters', label: 'Parameters' },
+          { key: 'settings', label: 'Settings' },
+          { key: 'docs', label: 'Docs' },
+        ].map((t) => (
+          <button
+            key={t.key}
+            onClick={() => setActiveTab(t.key as any)}
+            style={{
+              padding: '10px 14px', fontSize: '12px', fontWeight: activeTab === t.key ? 700 : 500,
+              color: activeTab === t.key ? '#ffffff' : '#71717a', background: 'transparent',
+              border: 'none', borderBottom: activeTab === t.key ? '2px solid #6366f1' : '2px solid transparent',
+              cursor: 'pointer', fontFamily: 'Inter, sans-serif',
+            }}
+          >
+            {t.label}
+          </button>
+        ))}
       </div>
 
       {/* Body Inputs */}
-      <div className="inspector-scroll-body">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {activeTab === 'parameters' && (
           <>
             {node.params.map((p, i) => (
-              <div key={i} className="input-field-group">
-                <label>{p.label}</label>
+              <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.label}</label>
                 {p.label.toLowerCase().includes('type') || p.label.toLowerCase().includes('timezone') ? (
                   <select
-                    className="styled-inspector-select"
                     value={paramValues[i] || p.value}
                     onChange={(e) => handleParamChange(i, e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   >
                     <option value={p.value}>{p.value}</option>
                     <option value="Cron Expression">Cron Expression</option>
@@ -234,23 +255,22 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                 ) : (
                   <input
                     type="text"
-                    className="styled-inspector-input"
                     value={paramValues[i] !== undefined ? paramValues[i] : p.value}
                     onChange={(e) => handleParamChange(i, e.target.value)}
+                    style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   />
                 )}
               </div>
             ))}
 
-            {/* Quick Connect Section in Inspector */}
             {targetNodeOptions.length > 0 && (
-              <div className="input-field-group" style={{ paddingTop: '8px', borderTop: '1px solid var(--border)' }}>
-                <label>Connect to Node</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Connect to Node</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <select
-                    className="styled-inspector-select"
                     value={connectTargetId}
                     onChange={(e) => setConnectTargetId(e.target.value)}
+                    style={{ flex: 1, padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   >
                     <option value="">Select target node...</option>
                     {targetNodeOptions.map((opt) => (
@@ -260,77 +280,76 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                     ))}
                   </select>
                   <button
-                    className="btn-connect-inspector"
                     onClick={handleConnectClick}
                     disabled={!connectTargetId}
                     title="Connect nodes"
+                    style={{ padding: '8px 12px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '6px', color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
-                    <Link2 size={13} />
+                    <Link2 size={14} />
                   </button>
                 </div>
               </div>
             )}
 
-            {/* Node Explanation Box */}
-            <div className="node-explainer-card">
-              <div className="explainer-title">{node.description || 'What does this node do?'}</div>
-              <div className="explainer-detail">{node.descriptionDetail}</div>
+            <div style={{ padding: '14px', background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>{node.description || 'What does this node do?'}</div>
+              <div style={{ fontSize: '11px', color: '#9d9db8', lineHeight: 1.5 }}>{node.descriptionDetail}</div>
             </div>
           </>
         )}
 
         {activeTab === 'settings' && (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div className="input-field-group">
-              <label>On Error Action</label>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>On Error Action</label>
               <select
-                className="styled-inspector-select"
                 value={onErrorAction}
                 onChange={(e) => setOnErrorAction(e.target.value as 'stop' | 'continue')}
+                style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none' }}
               >
                 <option value="stop">Stop Workflow Cycle</option>
                 <option value="continue">Continue & Log Error</option>
               </select>
             </div>
-            <div className="input-field-group">
-              <label>Retry Attempts</label>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>Retry Attempts</label>
               <input
                 type="number"
-                className="styled-inspector-input"
                 value={retryAttempts}
                 min={0}
                 max={5}
                 onChange={(e) => setRetryAttempts(Number(e.target.value))}
+                style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none' }}
               />
             </div>
           </div>
         )}
 
         {activeTab === 'docs' && (
-          <div className="node-explainer-card">
-            <div className="explainer-title">Node Documentation</div>
-            <div className="explainer-detail">
+          <div style={{ padding: '14px', background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>Node Documentation</div>
+            <div style={{ fontSize: '11px', color: '#9d9db8', lineHeight: 1.5 }}>
               This node handles automated workflow steps for autonomous persona publishing. Parameters configure execution intervals, target search domains, and LLM judgment thresholds.
             </div>
           </div>
         )}
       </div>
 
-      {/* Inspector Bottom Footer Status - Connected to Active Agent */}
-      <div className="inspector-footer">
-        <div className="footer-status-row">
-          <span className={`status-dot ${selectedAgent?.status === 'stopped' ? 'amber' : 'green'}`} />
-          <span className="footer-status-label">
+      {/* Inspector Bottom Footer Status */}
+      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.2)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: selectedAgent?.status === 'stopped' ? '#f59e0b' : '#22c55e' }} />
+          <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
             {selectedAgent ? `${selectedAgent.persona.name} [${selectedAgent.status.toUpperCase()}]` : 'Output Ready'}
           </span>
         </div>
-        <div className="footer-sub-info">
-          <span>Next execution</span>
-          <span>{formatNextExecution()}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+          <span style={{ color: '#71717a' }}>Next execution</span>
+          <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{formatNextExecution()}</span>
         </div>
-        <div className="footer-sub-info">
-          <span>Execution ID</span>
-          <span>{latestExecId}</span>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
+          <span style={{ color: '#71717a' }}>Execution ID</span>
+          <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{latestExecId}</span>
         </div>
       </div>
     </aside>

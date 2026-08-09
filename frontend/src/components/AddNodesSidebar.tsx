@@ -4,6 +4,7 @@ import {
   Database, Send, Sparkles, AlertCircle, RefreshCw, Rss,
   PanelLeftClose, PanelLeftOpen
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface AddNodesSidebarProps {
   onAddNode: (name: string, category: string) => void;
@@ -59,32 +60,56 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
     },
   ];
 
+  const categoryColors: Record<string, { bg: string; color: string; border: string }> = {
+    trigger: { bg: 'rgba(34, 197, 94, 0.12)', color: '#22c55e', border: 'rgba(34, 197, 94, 0.25)' },
+    discover: { bg: 'rgba(56, 189, 248, 0.12)', color: '#38bdf8', border: 'rgba(56, 189, 248, 0.25)' },
+    process: { bg: 'rgba(234, 179, 8, 0.12)', color: '#eab308', border: 'rgba(234, 179, 8, 0.25)' },
+    memory: { bg: 'rgba(168, 85, 247, 0.12)', color: '#a855f7', border: 'rgba(168, 85, 247, 0.25)' },
+    output: { bg: 'rgba(34, 197, 94, 0.12)', color: '#22c55e', border: 'rgba(34, 197, 94, 0.25)' },
+  };
+
   if (isCollapsed) {
     return (
-      <aside className="add-nodes-sidebar collapsed">
-        <div className="palette-header collapsed">
+      <aside style={{
+        width: '56px', minWidth: '56px', background: '#0c0c0e',
+        borderRight: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+        flexDirection: 'column', height: '100vh', zIndex: 15, alignItems: 'center',
+        transition: 'all 0.2s ease',
+      }}>
+        <div style={{ padding: '14px 0 10px', display: 'flex', justifyContent: 'center', width: '100%' }}>
           <button
-            className="palette-toggle-btn"
             onClick={() => setIsCollapsed(false)}
             title="Open Agent Tools Palette"
+            style={{
+              background: 'none', border: 'none', color: '#71717a', cursor: 'pointer',
+              padding: '6px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
           >
             <PanelLeftOpen size={16} />
           </button>
         </div>
 
-        <div className="palette-collapsed-icons">
+        <div style={{ flex: 1, overflowY: 'auto', padding: '10px 0 20px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px', width: '100%' }}>
           {groups.map((group) =>
             group.items.map((item, i) => {
               const Icon = item.icon;
+              const theme = categoryColors[item.type] || categoryColors.trigger;
               return (
-                <button
+                <motion.button
                   key={`${group.category}-${i}`}
-                  className={`palette-collapsed-icon-btn ${item.type}`}
                   onClick={() => onAddNode(item.name, group.category)}
                   title={`Add ${item.name} (${item.desc})`}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.95 }}
+                  style={{
+                    width: '36px', height: '36px', borderRadius: '8px',
+                    background: theme.bg, border: `1px solid ${theme.border}`,
+                    color: theme.color, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', cursor: 'pointer',
+                  }}
                 >
                   <Icon size={14} />
-                </button>
+                </motion.button>
               );
             })
           )}
@@ -94,31 +119,36 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
   }
 
   return (
-    <aside className="add-nodes-sidebar">
-      <div className="palette-header">
+    <aside style={{
+      width: '210px', minWidth: '210px', background: '#0c0c0e',
+      borderRight: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+      flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
+    }}>
+      <div style={{ padding: '16px 14px 10px', fontSize: '13px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '-0.01em' }}>
         <span>Agent Tools</span>
         <button
-          className="palette-toggle-btn"
           onClick={() => setIsCollapsed(true)}
           title="Close Agent Tools Palette"
+          style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}
         >
           <PanelLeftClose size={15} />
         </button>
       </div>
 
-      <div className="palette-search-box">
-        <div className="search-input-wrapper">
-          <Search size={13} color="var(--text-muted)" />
+      <div style={{ padding: '0 12px 12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px' }}>
+          <Search size={13} color="#71717a" />
           <input
             type="text"
             placeholder="Search tools..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
+            style={{ background: 'transparent', border: 'none', outline: 'none', color: '#ffffff', fontSize: '11px', width: '100%', fontFamily: 'Inter, sans-serif' }}
           />
         </div>
       </div>
 
-      <div className="palette-groups-scroll">
+      <div style={{ flex: 1, overflowY: 'auto', padding: '0 10px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
         {groups.map((group, idx) => {
           const filtered = group.items.filter(
             (item) =>
@@ -129,27 +159,34 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
 
           return (
             <div key={idx}>
-              <div className="palette-group-title">{group.title}</div>
-              <div className="palette-items-list">
+              <div style={{ fontSize: '9px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', paddingLeft: '2px' }}>{group.title}</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                 {filtered.map((item, i) => {
                   const Icon = item.icon;
+                  const theme = categoryColors[item.type] || categoryColors.trigger;
                   return (
-                    <div
+                    <motion.div
                       key={i}
-                      className="palette-item-card"
                       onClick={() => onAddNode(item.name, group.category)}
                       title={`Click to add ${item.name} (${item.desc})`}
+                      whileHover={{ x: 3, borderColor: 'rgba(99, 102, 241, 0.3)' }}
+                      whileTap={{ scale: 0.98 }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px',
+                        background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)',
+                        borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s ease',
+                      }}
                     >
-                      <div className={`palette-item-icon ${item.type}`}>
+                      <div style={{ width: '26px', height: '26px', borderRadius: '6px', background: theme.bg, border: `1px solid ${theme.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', color: theme.color, flexShrink: 0 }}>
                         <Icon size={13} />
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-                        <span className="palette-item-name">{item.name}</span>
-                        <span style={{ fontSize: '9px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+                        <span style={{ fontSize: '11px', fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
+                        <span style={{ fontSize: '9px', color: '#71717a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {item.desc}
                         </span>
                       </div>
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
