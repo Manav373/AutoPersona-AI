@@ -2,6 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import initSqlJs from "sql.js";
 import { Agent, Post, TopicReview, RunLog, PersonaProfile } from "../types";
+import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
 
 export function normalizePersona(persona: any): PersonaProfile {
   const domain = persona?.domain || "General";
@@ -67,7 +68,7 @@ export async function initDb(dataPath: string) {
   }
   dbPath = dataPath;
 
-  // Load or create database
+  // Load or create local in-memory database
   if (fs.existsSync(dbPath)) {
     const buffer = fs.readFileSync(dbPath);
     db = new SQL.Database(buffer);
@@ -78,6 +79,87 @@ export async function initDb(dataPath: string) {
   }
 
   dbReady = true;
+
+  // Sync state from Supabase Cloud if configured
+  await syncFromSupabase();
+}
+
+async function syncFromSupabase() {
+  const supabase = getSupabaseClient();
+  if (!supabase) return;
+
+  try {
+    // 1. Fetch agents
+    const { data: agents, error: err1 } = await supabase.from("agents").select("*");
+    if (!err1 && Array.isArray(agents)) {
+      for (const row of agents) {
+        db.run(
+          `INSERT OR REPLACE INTO agents (agent_id, persona_json, status, created_at, next_run_at) VALUES (?, ?, ?, ?, ?)`,
+          [
+            row.agent_id,
+            typeof row.persona_json === "string" ? row.persona_json : JSON.stringify(row.persona_json),
+            row.status,
+            row.created_at,
+            row.next_run_at || null,
+          ]
+        );
+      }
+    }
+
+    // 2. Fetch posts
+    const { data: posts, error: err2 } = await supabase.from("posts").select("*");
+    if (!err2 && Array.isArray(posts)) {
+      for (const row of posts) {
+        db.run(
+          `INSERT OR REPLACE INTO posts (id, agent_id, created_at, text, rationale, sources_json, topic_key) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+          [
+            row.id,
+            row.agent_id,
+            row.created_at,
+            row.text,
+            row.rationale,
+            typeof row.sources_json === "string" ? row.sources_json : JSON.stringify(row.sources_json),
+            row.topic_key,
+          ]
+        );
+      }
+    }
+
+    // 3. Fetch topic_reviews
+    const { data: reviews, error: err3 } = await supabase.from("topic_reviews").select("*");
+    if (!err3 && Array.isArray(reviews)) {
+      for (const row of reviews) {
+        db.run(
+          `INSERT OR IGNORE INTO topic_reviews (agent_id, reviewed_at, candidate_title, candidate_url, verdict, reason, novelty_score, relevance_score) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          [
+            row.agent_id,
+            row.reviewed_at,
+            row.candidate_title || null,
+            row.candidate_url || null,
+            row.verdict,
+            row.reason || null,
+            row.novelty_score || null,
+            row.relevance_score || null,
+          ]
+        );
+      }
+    }
+
+    // 4. Fetch run_log
+    const { data: logs, error: err4 } = await supabase.from("run_log").select("*");
+    if (!err4 && Array.isArray(logs)) {
+      for (const row of logs) {
+        db.run(
+          `INSERT OR IGNORE INTO run_log (agent_id, started_at, finished_at, outcome, detail) VALUES (?, ?, ?, ?, ?)`,
+          [row.agent_id, row.started_at, row.finished_at || null, row.outcome, row.detail || null]
+        );
+      }
+    }
+
+    console.log("⚡ Database synchronized with Supabase Cloud PostgreSQL");
+  } catch (err) {
+    console.error("Warning: Supabase state sync failed:", err);
+  }
 }
 
 function ensureReady() {
@@ -150,11 +232,10 @@ function saveDb() {
     fs.writeFileSync(dbPath, buffer);
   } catch (err: any) {
     if (err?.code === "EROFS" && dbPath !== "/tmp/agent.db") {
-      console.warn("⚠️ File system is read-only. Fallback dbPath to /tmp/agent.db");
       dbPath = "/tmp/agent.db";
       saveDb();
     } else {
-      console.error("Error saving database file:", err);
+      console.error("Error saving local database file:", err);
     }
   }
 }
@@ -162,12 +243,29 @@ function saveDb() {
 export function saveAgent(agent: Agent) {
   ensureReady();
   const normalizedPersona = normalizePersona(agent.persona);
+  const personaJson = JSON.stringify(normalizedPersona);
   db.run(
     `INSERT OR REPLACE INTO agents (agent_id, persona_json, status, created_at, next_run_at)
      VALUES (?, ?, ?, ?, ?)`,
-    [agent.agentId, JSON.stringify(normalizedPersona), agent.status, agent.createdAt, agent.nextRunAt || null]
+    [agent.agentId, personaJson, agent.status, agent.createdAt, agent.nextRunAt || null]
   );
   saveDb();
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    supabase
+      .from("agents")
+      .upsert({
+        agent_id: agent.agentId,
+        persona_json: personaJson,
+        status: agent.status,
+        created_at: agent.createdAt,
+        next_run_at: agent.nextRunAt || null,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Supabase saveAgent error:", error);
+      });
+  }
 }
 
 export function getAgent(agentId: string): Agent | null {
@@ -236,12 +334,31 @@ export function getAllActiveAgents(): Agent[] {
 
 export function savePost(post: Post) {
   ensureReady();
+  const sourcesJson = JSON.stringify(post.sources);
   db.run(
     `INSERT INTO posts (id, agent_id, created_at, text, rationale, sources_json, topic_key)
      VALUES (?, ?, ?, ?, ?, ?, ?)`,
-    [post.id, post.agentId, post.createdAt, post.text, post.rationale, JSON.stringify(post.sources), post.topicKey]
+    [post.id, post.agentId, post.createdAt, post.text, post.rationale, sourcesJson, post.topicKey]
   );
   saveDb();
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    supabase
+      .from("posts")
+      .upsert({
+        id: post.id,
+        agent_id: post.agentId,
+        created_at: post.createdAt,
+        text: post.text,
+        rationale: post.rationale,
+        sources_json: sourcesJson,
+        topic_key: post.topicKey,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Supabase savePost error:", error);
+      });
+  }
 }
 
 export function getPosts(agentId: string): Post[] {
@@ -330,6 +447,25 @@ export function saveTopicReview(review: TopicReview) {
     ]
   );
   saveDb();
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    supabase
+      .from("topic_reviews")
+      .insert({
+        agent_id: review.agentId,
+        reviewed_at: review.reviewedAt,
+        candidate_title: review.candidateTitle || null,
+        candidate_url: review.candidateUrl || null,
+        verdict: review.verdict,
+        reason: review.reason || null,
+        novelty_score: review.noveltyScore || null,
+        relevance_score: review.relevanceScore || null,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Supabase saveTopicReview error:", error);
+      });
+  }
 }
 
 export function getTopicReviews(agentId?: string, limit: number = 50): TopicReview[] {
@@ -371,6 +507,22 @@ export function saveRunLog(log: RunLog) {
     [log.agentId, log.startedAt, log.finishedAt || null, log.outcome, log.detail || null]
   );
   saveDb();
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    supabase
+      .from("run_log")
+      .insert({
+        agent_id: log.agentId,
+        started_at: log.startedAt,
+        finished_at: log.finishedAt || null,
+        outcome: log.outcome,
+        detail: log.detail || null,
+      })
+      .then(({ error }) => {
+        if (error) console.error("Supabase saveRunLog error:", error);
+      });
+  }
 }
 
 export function getRunLogs(agentId?: string, limit: number = 50): RunLog[] {
@@ -446,4 +598,14 @@ export function clearAllData() {
   db.run(`DELETE FROM run_log`);
   db.run(`DELETE FROM agents`);
   saveDb();
+
+  const supabase = getSupabaseClient();
+  if (supabase) {
+    Promise.all([
+      supabase.from("posts").delete().neq("id", "0"),
+      supabase.from("topic_reviews").delete().neq("id", 0),
+      supabase.from("run_log").delete().neq("id", 0),
+      supabase.from("agents").delete().neq("agent_id", "0"),
+    ]).catch((err) => console.error("Supabase clearAllData error:", err));
+  }
 }
