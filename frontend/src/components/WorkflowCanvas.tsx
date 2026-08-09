@@ -4,6 +4,7 @@ import {
   FileCheck, Play, ZoomIn, ZoomOut, Target, Maximize2,
   RefreshCw, Link2, X, Move, Compass
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Agent, RunLog, TopicReview } from '../types';
 
 export interface CanvasNodeData {
@@ -767,8 +768,13 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
             : { color: '#818cf8', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)', glow: 'rgba(99, 102, 241, 0.25)' };
 
           return (
-            <div
+            <motion.div
               key={node.id}
+              initial={{ opacity: 0, scale: 0.88, y: 10 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              whileHover={{ scale: 1.03, y: -2 }}
+              whileTap={{ scale: 0.97 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 28 }}
               onPointerDown={(e) => handleNodePointerDown(node.id, e)}
               style={{
                 left: `${node.x}px`,
@@ -791,7 +797,6 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                   : `0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)`,
                 backdropFilter: 'blur(16px)',
                 userSelect: 'none',
-                transition: 'border 0.15s ease, box-shadow 0.15s ease',
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -808,7 +813,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
               }}
             >
               {/* Top Port Dot */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.5 }}
+                whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
                   background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
@@ -819,7 +826,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 title="Click port to connect to another node"
               />
               {/* Left Port Dot */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.5 }}
+                whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
                   background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
@@ -850,27 +859,33 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                   </div>
                 </div>
 
-                <button
+                <motion.button
+                  whileHover={{ scale: 1.2 }}
+                  whileTap={{ scale: 0.9 }}
                   style={{ background: 'none', border: 'none', fontSize: '12px', color: categoryTheme.color, opacity: 0.85, cursor: 'pointer', padding: '3px' }}
                   onClick={(e) => startConnecting(node.id, e)}
                   title="Connect node"
                 >
                   <Link2 size={13} />
-                </button>
+                </motion.button>
 
                 {activeNodes.length > 2 && (
-                  <button
+                  <motion.button
+                    whileHover={{ scale: 1.2, color: '#ef4444' }}
+                    whileTap={{ scale: 0.9 }}
                     style={{ background: 'none', border: 'none', fontSize: '15px', color: '#71717a', cursor: 'pointer', padding: '2px', lineHeight: 1 }}
                     onClick={(e) => handleDeleteNode(node.id, e)}
                     title="Remove node"
                   >
                     ×
-                  </button>
+                  </motion.button>
                 )}
               </div>
 
               {/* Right Port Dot */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.5 }}
+                whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
                   background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
@@ -881,7 +896,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 title="Click port to connect to another node"
               />
               {/* Bottom Port Dot */}
-              <div
+              <motion.div
+                whileHover={{ scale: 1.5 }}
+                whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
                   background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
@@ -891,21 +908,28 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
               />
-            </div>
+            </motion.div>
           );
         })}
       </div>
 
       {/* Bottom Floating Action Bar */}
-      <div style={{
-        position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
-        display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 12, 20, 0.9)',
-        border: '1px solid rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '14px',
-        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(16px)', zIndex: 20, pointerEvents: 'auto',
-      }}>
-        <button
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.35, ease: 'easeOut', delay: 0.1 }}
+        style={{
+          position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 12, 20, 0.9)',
+          border: '1px solid rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '14px',
+          boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(16px)', zIndex: 20, pointerEvents: 'auto',
+        }}
+      >
+        <motion.button
           onClick={onTriggerCycle}
           disabled={isTriggering || selectedAgentId === 'all'}
+          whileHover={{ scale: 1.04 }}
+          whileTap={{ scale: 0.96 }}
           style={{
             display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px',
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#ffffff',
@@ -916,7 +940,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         >
           <Play size={13} fill="#fff" />
           {isTriggering ? 'Running...' : 'Run Workflow'}
-        </button>
+        </motion.button>
         <button
           title="Center & Fit Nodes View"
           onClick={handleFitView}
@@ -936,7 +960,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
         >
           <RefreshCw size={14} />
         </button>
-      </div>
+      </motion.div>
 
       {/* Bottom-Right Dynamic Mini Map */}
       <div className="canvas-minimap-box" style={{ pointerEvents: 'auto' }}>
