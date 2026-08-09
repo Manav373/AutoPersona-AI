@@ -52,7 +52,14 @@ export function ensureDbInitialized(dataPath?: string): Promise<void> {
 }
 
 export async function initDb(dataPath: string) {
-  SQL = await initSqlJs();
+  try {
+    const wasmPath = require.resolve("sql.js/dist/sql-wasm.wasm");
+    SQL = await initSqlJs({
+      locateFile: () => wasmPath,
+    });
+  } catch {
+    SQL = await initSqlJs();
+  }
   dbPath = dataPath;
 
   // Load or create database
