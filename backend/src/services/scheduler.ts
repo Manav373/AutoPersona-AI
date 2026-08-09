@@ -48,7 +48,7 @@ export async function runCycle(agentId: string) {
       console.log(`[${agentId}] No candidates found`);
       runLog.outcome = "skipped_no_candidates";
       runLog.finishedAt = new Date().toISOString();
-      db.saveRunLog(runLog);
+      await db.saveRunLog(runLog);
       reschedule(agentId);
       return;
     }
@@ -75,7 +75,7 @@ export async function runCycle(agentId: string) {
     // Save all reviews
     for (const judgment of (review?.all || [])) {
       if (judgment && judgment.candidate) {
-        db.saveTopicReview({
+        await db.saveTopicReview({
           agentId,
           reviewedAt: new Date().toISOString(),
           candidateTitle: judgment.candidate.title,
@@ -92,7 +92,7 @@ export async function runCycle(agentId: string) {
       console.log(`[${agentId}] All topics rejected`);
       runLog.outcome = "skipped_all_rejected";
       runLog.finishedAt = new Date().toISOString();
-      db.saveRunLog(runLog);
+      await db.saveRunLog(runLog);
       reschedule(agentId);
       return;
     }
@@ -119,7 +119,7 @@ export async function runCycle(agentId: string) {
         runLog.outcome = "skipped_dedup";
         runLog.detail = `Exact match on topic_key: ${topicKey}`;
         runLog.finishedAt = new Date().toISOString();
-        db.saveRunLog(runLog);
+        await db.saveRunLog(runLog);
         reschedule(agentId);
         return;
       }
@@ -135,7 +135,7 @@ export async function runCycle(agentId: string) {
       console.log(`[${agentId}] Draft is near-duplicate of existing post`);
       runLog.outcome = "skipped_near_duplicate";
       runLog.finishedAt = new Date().toISOString();
-      db.saveRunLog(runLog);
+      await db.saveRunLog(runLog);
       reschedule(agentId);
       return;
     }
@@ -151,7 +151,7 @@ export async function runCycle(agentId: string) {
       topicKey,
     };
 
-    db.savePost(post);
+    await db.savePost(post);
     console.log(`[${agentId}] Published post: ${post.id}`);
 
     runLog.outcome = "published";
@@ -159,12 +159,12 @@ export async function runCycle(agentId: string) {
   } catch (error) {
     console.error(`[${agentId}] Error during cycle:`, error);
     runLog.outcome = "error";
-    runLog.detail = String(error);
+    runLog.detail = error instanceof Error ? error.message : String(error);
     runLog.finishedAt = new Date().toISOString();
+  } finally {
+    await db.saveRunLog(runLog);
+    reschedule(agentId);
   }
-
-  db.saveRunLog(runLog);
-  reschedule(agentId);
 }
 
 function isNearDuplicate(text: string, existing: string[]): boolean {

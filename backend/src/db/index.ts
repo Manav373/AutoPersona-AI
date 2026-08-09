@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as path from "path";
 import initSqlJs from "sql.js";
 import { Agent, Post, TopicReview, RunLog, PersonaProfile } from "../types";
-import { getSupabaseClient, isSupabaseConfigured } from "./supabase";
+import { getSupabaseClient } from "./supabase";
 
 export function normalizePersona(persona: any): PersonaProfile {
   const domain = persona?.domain || "General";
@@ -43,7 +43,7 @@ export function isDbReady(): boolean {
 
 export function ensureDbInitialized(dataPath?: string): Promise<void> {
   if (dbReady) {
-    return Promise.resolve();
+    return syncFromSupabase();
   }
   if (!initPromise) {
     const isVercel = !!(process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_EXECUTION_ENV);
@@ -84,7 +84,7 @@ export async function initDb(dataPath: string) {
   await syncFromSupabase();
 }
 
-async function syncFromSupabase() {
+export async function syncFromSupabase() {
   const supabase = getSupabaseClient();
   if (!supabase) return;
 
@@ -155,8 +155,6 @@ async function syncFromSupabase() {
         );
       }
     }
-
-    console.log("⚡ Database synchronized with Supabase Cloud PostgreSQL");
   } catch (err) {
     console.error("Warning: Supabase state sync failed:", err);
   }
@@ -240,7 +238,7 @@ function saveDb() {
   }
 }
 
-export function saveAgent(agent: Agent) {
+export async function saveAgent(agent: Agent) {
   ensureReady();
   const normalizedPersona = normalizePersona(agent.persona);
   const personaJson = JSON.stringify(normalizedPersona);
@@ -253,18 +251,18 @@ export function saveAgent(agent: Agent) {
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    supabase
-      .from("agents")
-      .upsert({
+    try {
+      const { error } = await supabase.from("agents").upsert({
         agent_id: agent.agentId,
         persona_json: personaJson,
         status: agent.status,
         created_at: agent.createdAt,
         next_run_at: agent.nextRunAt || null,
-      })
-      .then(({ error }) => {
-        if (error) console.error("Supabase saveAgent error:", error);
       });
+      if (error) console.error("Supabase saveAgent error:", error);
+    } catch (err) {
+      console.error("Supabase saveAgent exception:", err);
+    }
   }
 }
 
@@ -332,7 +330,7 @@ export function getAllActiveAgents(): Agent[] {
   return agents;
 }
 
-export function savePost(post: Post) {
+export async function savePost(post: Post) {
   ensureReady();
   const sourcesJson = JSON.stringify(post.sources);
   db.run(
@@ -344,9 +342,8 @@ export function savePost(post: Post) {
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    supabase
-      .from("posts")
-      .upsert({
+    try {
+      const { error } = await supabase.from("posts").upsert({
         id: post.id,
         agent_id: post.agentId,
         created_at: post.createdAt,
@@ -354,10 +351,11 @@ export function savePost(post: Post) {
         rationale: post.rationale,
         sources_json: sourcesJson,
         topic_key: post.topicKey,
-      })
-      .then(({ error }) => {
-        if (error) console.error("Supabase savePost error:", error);
       });
+      if (error) console.error("Supabase savePost error:", error);
+    } catch (err) {
+      console.error("Supabase savePost exception:", err);
+    }
   }
 }
 
@@ -430,7 +428,7 @@ export function getRecentPosts(agentId: string, limit: number): Post[] {
   return posts;
 }
 
-export function saveTopicReview(review: TopicReview) {
+export async function saveTopicReview(review: TopicReview) {
   ensureReady();
   db.run(
     `INSERT INTO topic_reviews (agent_id, reviewed_at, candidate_title, candidate_url, verdict, reason, novelty_score, relevance_score)
@@ -450,9 +448,8 @@ export function saveTopicReview(review: TopicReview) {
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    supabase
-      .from("topic_reviews")
-      .insert({
+    try {
+      const { error } = await supabase.from("topic_reviews").insert({
         agent_id: review.agentId,
         reviewed_at: review.reviewedAt,
         candidate_title: review.candidateTitle || null,
@@ -461,10 +458,11 @@ export function saveTopicReview(review: TopicReview) {
         reason: review.reason || null,
         novelty_score: review.noveltyScore || null,
         relevance_score: review.relevanceScore || null,
-      })
-      .then(({ error }) => {
-        if (error) console.error("Supabase saveTopicReview error:", error);
       });
+      if (error) console.error("Supabase saveTopicReview error:", error);
+    } catch (err) {
+      console.error("Supabase saveTopicReview exception:", err);
+    }
   }
 }
 
@@ -499,7 +497,7 @@ export function getTopicReviews(agentId?: string, limit: number = 50): TopicRevi
   return reviews;
 }
 
-export function saveRunLog(log: RunLog) {
+export async function saveRunLog(log: RunLog) {
   ensureReady();
   db.run(
     `INSERT INTO run_log (agent_id, started_at, finished_at, outcome, detail)
@@ -510,18 +508,18 @@ export function saveRunLog(log: RunLog) {
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    supabase
-      .from("run_log")
-      .insert({
+    try {
+      const { error } = await supabase.from("run_log").insert({
         agent_id: log.agentId,
         started_at: log.startedAt,
         finished_at: log.finishedAt || null,
         outcome: log.outcome,
         detail: log.detail || null,
-      })
-      .then(({ error }) => {
-        if (error) console.error("Supabase saveRunLog error:", error);
       });
+      if (error) console.error("Supabase saveRunLog error:", error);
+    } catch (err) {
+      console.error("Supabase saveRunLog exception:", err);
+    }
   }
 }
 
@@ -591,7 +589,7 @@ export function topicExists(agentId: string, topicKey: string): boolean {
   return exists;
 }
 
-export function clearAllData() {
+export async function clearAllData() {
   ensureReady();
   db.run(`DELETE FROM posts`);
   db.run(`DELETE FROM topic_reviews`);
@@ -601,11 +599,15 @@ export function clearAllData() {
 
   const supabase = getSupabaseClient();
   if (supabase) {
-    Promise.all([
-      supabase.from("posts").delete().neq("id", "0"),
-      supabase.from("topic_reviews").delete().neq("id", 0),
-      supabase.from("run_log").delete().neq("id", 0),
-      supabase.from("agents").delete().neq("agent_id", "0"),
-    ]).catch((err) => console.error("Supabase clearAllData error:", err));
+    try {
+      await Promise.all([
+        supabase.from("posts").delete().neq("id", "0"),
+        supabase.from("topic_reviews").delete().neq("id", 0),
+        supabase.from("run_log").delete().neq("id", 0),
+        supabase.from("agents").delete().neq("agent_id", "0"),
+      ]);
+    } catch (err) {
+      console.error("Supabase clearAllData exception:", err);
+    }
   }
 }

@@ -28,7 +28,7 @@ router.post("/api/agent/init", async (req: Request, res: Response) => {
       createdAt: new Date().toISOString(),
     };
 
-    db.saveAgent(agent);
+    await db.saveAgent(agent);
 
     // Immediately start autonomous timer background cycle
     startScheduler(agentId);
@@ -55,7 +55,7 @@ router.post("/api/agent/status", async (req: Request, res: Response) => {
     }
 
     agent.status = status;
-    db.saveAgent(agent);
+    await db.saveAgent(agent);
 
     if (status === "active") {
       startScheduler(agentId);
@@ -74,6 +74,7 @@ router.post("/api/agent/status", async (req: Request, res: Response) => {
 router.get("/api/agent/feed", async (req: Request, res: Response) => {
   try {
     const { agentId } = req.query;
+    await db.syncFromSupabase();
 
     if (!agentId || agentId === "all" || typeof agentId !== "string") {
       const posts = db.getAllPosts();
@@ -131,8 +132,9 @@ router.post("/api/agent/trigger", async (req: Request, res: Response) => {
 });
 
 // GET /api/agents - List all agents
-router.get("/api/agents", (req: Request, res: Response) => {
+router.get("/api/agents", async (req: Request, res: Response) => {
   try {
+    await db.syncFromSupabase();
     const agents = db.getAllAgents();
     res.json({ agents });
   } catch (error) {
@@ -141,8 +143,9 @@ router.get("/api/agents", (req: Request, res: Response) => {
 });
 
 // GET /api/stats - System Statistics
-router.get("/api/stats", (req: Request, res: Response) => {
+router.get("/api/stats", async (req: Request, res: Response) => {
   try {
+    await db.syncFromSupabase();
     const stats = db.getStats();
     res.json(stats);
   } catch (error) {
@@ -151,9 +154,10 @@ router.get("/api/stats", (req: Request, res: Response) => {
 });
 
 // GET /api/logs - Execution logs & topic reviews
-router.get("/api/logs", (req: Request, res: Response) => {
+router.get("/api/logs", async (req: Request, res: Response) => {
   try {
     const { agentId } = req.query;
+    await db.syncFromSupabase();
     const topicReviews = db.getTopicReviews(typeof agentId === "string" ? agentId : undefined);
     const runLogs = db.getRunLogs(typeof agentId === "string" ? agentId : undefined);
     res.json({ topicReviews, runLogs });
@@ -163,10 +167,10 @@ router.get("/api/logs", (req: Request, res: Response) => {
 });
 
 // POST /api/reset - Clear all agents and generated data right now
-router.post("/api/reset", (req: Request, res: Response) => {
+router.post("/api/reset", async (req: Request, res: Response) => {
   try {
     stopScheduler();
-    db.clearAllData();
+    await db.clearAllData();
     res.json({ success: true, message: "All agents and generated data cleared successfully." });
   } catch (error) {
     console.error("Error clearing data:", error);
