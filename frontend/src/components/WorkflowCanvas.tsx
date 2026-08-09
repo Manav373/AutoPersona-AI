@@ -576,8 +576,19 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
       onMouseMove={handleCanvasMouseMove}
       onWheel={handleCanvasWheel}
       style={{
+        flex: 1,
+        width: '100%',
+        height: '100%',
+        minHeight: '100%',
+        position: 'relative',
+        overflow: 'hidden',
+        backgroundColor: '#050508',
+        backgroundImage: 'radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px)',
+        backgroundSize: '24px 24px',
         backgroundPosition: `${panOffset.x}px ${panOffset.y}px`,
         cursor: isPanning ? 'grabbing' : 'grab',
+        userSelect: 'none',
+        touchAction: 'none',
       }}
     >
       {/* Interactive Connecting Banner */}
@@ -670,16 +681,27 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
               if (!cable?.path) return null;
 
               const colorClass = conn.type === 'green' ? 'green' : conn.type === 'red' ? 'red' : conn.type === 'dashed' ? 'dashed' : '';
+              const strokeColor = conn.type === 'green' ? '#22c55e' : conn.type === 'red' ? '#ef4444' : 'rgba(99, 102, 241, 0.6)';
 
               return (
                 <g key={conn.id} className="cable-group" style={{ pointerEvents: 'auto' }}>
                   {/* Base Solid Connection Cable */}
-                  <path d={cable.path} className={`graph-cable ${colorClass}`} />
+                  <path
+                    d={cable.path}
+                    className={`graph-cable ${colorClass}`}
+                    fill="none"
+                    stroke={strokeColor}
+                    strokeWidth={2}
+                  />
 
                   {/* Animated Flowing Workflow Dash Overlay */}
                   <path
                     d={cable.path}
                     className={`graph-cable-flow ${colorClass} ${isTriggering ? 'running' : ''}`}
+                    fill="none"
+                    stroke={strokeColor}
+                    strokeWidth={2}
+                    strokeDasharray="6 10"
                   />
 
                   {/* Delete cable button on hover midpoint */}
@@ -688,8 +710,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                     onClick={(e) => handleDeleteConnection(conn.id, e)}
                     style={{ cursor: 'pointer', opacity: 0.8 }}
                   >
-                    <circle cx={cable.midX} cy={cable.midY} r="9" fill="var(--bg-node)" stroke="var(--border)" />
-                    <text x={cable.midX} y={cable.midY + 3.5} textAnchor="middle" fill="var(--text-muted)" fontSize="10px" fontWeight="bold">×</text>
+                    <circle cx={cable.midX} cy={cable.midY} r="9" fill="#121215" stroke="rgba(255, 255, 255, 0.2)" />
+                    <text x={cable.midX} y={cable.midY + 3.5} textAnchor="middle" fill="#a1a1aa" fontSize="10px" fontWeight="bold">×</text>
                   </g>
                 </g>
               );
@@ -700,6 +722,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
               <path
                 d={`M ${getNode(connectingFromId)!.x + 105} ${getNode(connectingFromId)!.y + 54} L ${mousePos.x} ${mousePos.y}`}
                 className="graph-cable green"
+                fill="none"
+                stroke="#22c55e"
+                strokeWidth={2}
                 strokeDasharray="4 4"
               />
             )}
@@ -733,18 +758,40 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
           const isSelected = selectedNodeId === node.id;
           const isConnectingFrom = connectingFromId === node.id;
 
+          const categoryTheme = node.type === 'trigger'
+            ? { color: '#22c55e', bg: 'rgba(34, 197, 94, 0.15)', border: 'rgba(34, 197, 94, 0.3)', glow: 'rgba(34, 197, 94, 0.25)' }
+            : node.type === 'discover'
+            ? { color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.15)', border: 'rgba(56, 189, 248, 0.3)', glow: 'rgba(56, 189, 248, 0.25)' }
+            : node.type === 'memory'
+            ? { color: '#a855f7', bg: 'rgba(168, 85, 247, 0.15)', border: 'rgba(168, 85, 247, 0.3)', glow: 'rgba(168, 85, 247, 0.25)' }
+            : { color: '#818cf8', bg: 'rgba(99, 102, 241, 0.15)', border: 'rgba(99, 102, 241, 0.3)', glow: 'rgba(99, 102, 241, 0.25)' };
+
           return (
             <div
               key={node.id}
               onPointerDown={(e) => handleNodePointerDown(node.id, e)}
-              className={`n8n-node-box ${node.nodeClass || 'node-discover'} ${isSelected ? 'selected' : ''} ${isConnectingFrom ? 'connecting-source' : ''}`}
               style={{
                 left: `${node.x}px`,
                 top: `${node.y}px`,
                 position: 'absolute',
+                minWidth: '200px',
+                background: 'rgba(14, 14, 24, 0.95)',
+                border: isSelected
+                  ? '1.5px solid #6366f1'
+                  : isConnectingFrom
+                  ? '1.5px solid #22c55e'
+                  : `1px solid ${categoryTheme.border}`,
+                borderRadius: '14px',
+                padding: '12px 14px',
                 cursor: 'grab',
                 pointerEvents: 'auto',
-                zIndex: isConnectingFrom ? 50 : 5,
+                zIndex: isConnectingFrom ? 50 : isSelected ? 20 : 5,
+                boxShadow: isSelected
+                  ? `0 0 0 3px ${categoryTheme.glow}, 0 12px 36px rgba(0, 0, 0, 0.7)`
+                  : `0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)`,
+                backdropFilter: 'blur(16px)',
+                userSelect: 'none',
+                transition: 'border 0.15s ease, box-shadow 0.15s ease',
               }}
               onClick={(e) => {
                 e.stopPropagation();
@@ -760,39 +807,60 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 });
               }}
             >
+              {/* Top Port Dot */}
               <div
-                className="node-port-dot node-port-top"
+                style={{
+                  position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
+                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  top: '-6px', left: '50%', transform: 'translateX(-50%)',
+                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
               />
+              {/* Left Port Dot */}
               <div
-                className="node-port-dot node-port-left"
-                style={{ left: '-4px', top: '50%', transform: 'translateY(-50%)' }}
+                style={{
+                  position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
+                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  left: '-6px', top: '50%', transform: 'translateY(-50%)',
+                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
               />
-              <div className="node-box-inner">
-                <div className="node-box-icon">
-                  <Icon size={15} />
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <div style={{
+                  width: '32px', height: '32px', borderRadius: '10px',
+                  background: categoryTheme.bg, border: `1px solid ${categoryTheme.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', color: categoryTheme.color, flexShrink: 0,
+                  boxShadow: `0 0 12px ${categoryTheme.bg}`,
+                }}>
+                  <Icon size={16} />
                 </div>
-                <div className="node-box-text">
-                  <div className="node-box-title">{node.title}</div>
-                  <div className="node-box-subtitle">{node.subtitle}</div>
+
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
+                    {node.title}
+                  </div>
+                  <div style={{ fontSize: '10px', color: '#9d9db8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                    <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: categoryTheme.color }} />
+                    {node.subtitle}
+                  </div>
                 </div>
 
                 <button
-                  className="nav-icon-btn"
-                  style={{ fontSize: '12px', color: 'var(--purple)', opacity: 0.8 }}
+                  style={{ background: 'none', border: 'none', fontSize: '12px', color: categoryTheme.color, opacity: 0.85, cursor: 'pointer', padding: '3px' }}
                   onClick={(e) => startConnecting(node.id, e)}
                   title="Connect node"
                 >
-                  <Link2 size={12} />
+                  <Link2 size={13} />
                 </button>
 
                 {activeNodes.length > 2 && (
                   <button
-                    className="nav-icon-btn"
-                    style={{ fontSize: '10px', opacity: 0.6 }}
+                    style={{ background: 'none', border: 'none', fontSize: '15px', color: '#71717a', cursor: 'pointer', padding: '2px', lineHeight: 1 }}
                     onClick={(e) => handleDeleteNode(node.id, e)}
                     title="Remove node"
                   >
@@ -800,14 +868,26 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                   </button>
                 )}
               </div>
+
+              {/* Right Port Dot */}
               <div
-                className="node-port-dot node-port-right"
-                style={{ right: '-4px', left: 'auto', top: '50%', transform: 'translateY(-50%)' }}
+                style={{
+                  position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
+                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  right: '-6px', top: '50%', transform: 'translateY(-50%)',
+                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
               />
+              {/* Bottom Port Dot */}
               <div
-                className="node-port-dot node-port-bottom"
+                style={{
+                  position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
+                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
+                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
               />
@@ -817,24 +897,34 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
       </div>
 
       {/* Bottom Floating Action Bar */}
-      <div className="floating-bottom-bar" style={{ pointerEvents: 'auto' }}>
+      <div style={{
+        position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+        display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(12, 12, 20, 0.9)',
+        border: '1px solid rgba(255, 255, 255, 0.1)', padding: '8px 12px', borderRadius: '14px',
+        boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)', backdropFilter: 'blur(16px)', zIndex: 20, pointerEvents: 'auto',
+      }}>
         <button
-          className="btn-run-workflow"
           onClick={onTriggerCycle}
           disabled={isTriggering || selectedAgentId === 'all'}
+          style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '9px 18px',
+            background: 'linear-gradient(135deg, #6366f1, #8b5cf6)', color: '#ffffff',
+            border: 'none', borderRadius: '8px', fontSize: '12px', fontWeight: 700,
+            cursor: 'pointer', fontFamily: 'Inter, sans-serif', boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)',
+            opacity: (isTriggering || selectedAgentId === 'all') ? 0.5 : 1,
+          }}
         >
           <Play size={13} fill="#fff" />
           {isTriggering ? 'Running...' : 'Run Workflow'}
         </button>
         <button
-          className="action-icon-btn"
           title="Center & Fit Nodes View"
           onClick={handleFitView}
+          style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#9d9db8', cursor: 'pointer' }}
         >
           <Compass size={14} />
         </button>
         <button
-          className="action-icon-btn"
           title="Reset Layout & Connections"
           onClick={() => {
             updateNodes(INITIAL_NODES);
@@ -842,6 +932,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
             setPanOffset({ x: 0, y: 0 });
             setZoomLevel(1);
           }}
+          style={{ width: '32px', height: '32px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#9d9db8', cursor: 'pointer' }}
         >
           <RefreshCw size={14} />
         </button>
