@@ -370,51 +370,28 @@ export function App() {
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative', background: '#050508' }}>
         {/* Workspace Topbar */}
         <div style={{
-          height: '52px', padding: '0 24px', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
-          background: 'rgba(9, 9, 11, 0.92)', zIndex: 10, flexShrink: 0, backdropFilter: 'blur(16px)',
+          height: '44px', padding: '0 20px', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
+          background: 'rgba(9, 9, 11, 0.85)', zIndex: 10, flexShrink: 0, backdropFilter: 'blur(16px)',
         }}>
-          {/* Left: View Title */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <div style={{
-              width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1',
-              boxShadow: '0 0 10px #6366f1', flexShrink: 0,
-            }} />
-            <div>
-              <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>{currentTitle.title}</h2>
-              <p style={{ fontSize: '10px', color: '#71717a', margin: '1px 0 0 0' }}>{currentTitle.sub}</p>
-            </div>
+          {/* Left: View Title & Subtitle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 8px #6366f1', flexShrink: 0 }} />
+            <h2 style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>{currentTitle.title}</h2>
+            <span style={{ fontSize: '11px', color: '#52525b' }}>/</span>
+            <span style={{ fontSize: '11px', color: '#9d9db8' }}>{currentTitle.sub}</span>
           </div>
 
-          {/* Center: Global Search Bar */}
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px',
-            background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)',
-            borderRadius: '100px', width: '320px', transition: 'all 0.2s ease',
-          }}>
-            <Search size={13} color="#71717a" />
-            <input
-              type="text"
-              placeholder="Search persona, workflow, logs..."
-              style={{
-                background: 'transparent', border: 'none', outline: 'none',
-                color: '#ffffff', fontSize: '11px', width: '100%', fontFamily: 'Inter, sans-serif',
-              }}
-            />
-            <span style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace' }}>
-              ⌘K
-            </span>
-          </div>
-
-          {/* Right: Persona Selector & Quick Actions */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Right: Persona Selector & Minimal Action */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Agent Persona Filter */}
             <select
               value={selectedAgentId}
               onChange={(e) => setSelectedAgentId(e.target.value)}
               style={{
-                padding: '6px 12px', background: 'rgba(20, 20, 32, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
-                color: '#ffffff', fontSize: '11px', fontWeight: 600, outline: 'none',
+                padding: '4px 10px', background: 'rgba(20, 20, 32, 0.7)',
+                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px',
+                color: '#e4e4e7', fontSize: '11px', fontWeight: 600, outline: 'none',
                 fontFamily: 'Inter, sans-serif', cursor: 'pointer',
               }}
             >
@@ -426,36 +403,22 @@ export function App() {
               ))}
             </select>
 
-            {/* System Notification Bell */}
-            <button
-              onClick={() => showToast('🔔 All autonomous persona agents running normally.')}
-              style={{
-                width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.04)',
-                border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', color: '#a1a1aa', cursor: 'pointer', position: 'relative',
-              }}
-              title="System Notifications"
-            >
-              <Bell size={13} />
-              <span style={{ position: 'absolute', top: '7px', right: '7px', width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }} />
-            </button>
-
-            {/* Quick Run Cycle Button */}
+            {/* Quick Trigger Button */}
             <motion.button
               onClick={handleTrigger}
               disabled={isTriggering}
               whileHover={{ scale: 1.04 }}
               whileTap={{ scale: 0.96 }}
               style={{
-                padding: '6px 14px', borderRadius: '8px', fontSize: '11px',
+                padding: '4px 12px', borderRadius: '6px', fontSize: '11px',
                 fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
                 border: 'none', color: '#ffffff', fontFamily: 'Inter, sans-serif',
-                display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 0 14px rgba(99, 102, 241, 0.3)',
+                display: 'flex', alignItems: 'center', gap: '5px', boxShadow: '0 0 12px rgba(99, 102, 241, 0.3)',
                 opacity: isTriggering ? 0.7 : 1,
               }}
               title="Trigger real workflow cycle"
             >
-              <Zap size={13} className={isTriggering ? 'spin' : ''} />
+              <Zap size={12} className={isTriggering ? 'spin' : ''} />
               {isTriggering ? 'Running...' : 'Run Cycle'}
             </motion.button>
           </div>

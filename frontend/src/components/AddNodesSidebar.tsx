@@ -119,11 +119,16 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
   }
 
   return (
-    <aside style={{
-      width: '210px', minWidth: '210px', background: '#0c0c0e',
-      borderRight: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
-      flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
-    }}>
+    <motion.aside
+      initial={{ opacity: 0, x: -20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      style={{
+        width: '210px', minWidth: '210px', background: '#0c0c0e',
+        borderRight: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+        flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
+      }}
+    >
       <div style={{ padding: '16px 14px 10px', fontSize: '13px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '-0.01em' }}>
         <span>Agent Tools</span>
         <button
@@ -194,6 +199,6 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
           );
         })}
       </div>
-    </aside>
+    </motion.aside>
   );
 };

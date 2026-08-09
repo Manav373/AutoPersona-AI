@@ -154,11 +154,16 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
   }
 
   return (
-    <aside style={{
-      width: '320px', minWidth: '320px', background: '#0d0d10',
-      borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
-      flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
-    }}>
+    <motion.aside
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.25, ease: 'easeOut' }}
+      style={{
+        width: '320px', minWidth: '320px', background: '#0d0d10',
+        borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
+        flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
+      }}
+    >
       {/* Topbar with Executions Button & Collapse Toggle */}
       <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
         <button
@@ -352,6 +357,6 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
           <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{latestExecId}</span>
         </div>
       </div>
-    </aside>
+    </motion.aside>
   );
 };
