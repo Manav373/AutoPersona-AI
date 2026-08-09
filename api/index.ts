@@ -11,7 +11,7 @@ app.use(express.json());
 // Ensure database is initialized before handling requests
 app.use(async (req, res, next) => {
   try {
-    await ensureDbInitialized();
+    await ensureDbInitialized("/tmp/agent.db");
     next();
   } catch (error) {
     console.error("Database initialization error:", error);

@@ -45,13 +45,18 @@ export function ensureDbInitialized(dataPath?: string): Promise<void> {
     return Promise.resolve();
   }
   if (!initPromise) {
-    const targetPath = dataPath || process.env.DATABASE_PATH || (process.env.VERCEL ? "/tmp/agent.db" : "./agent.db");
+    const isVercel = !!(process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_EXECUTION_ENV);
+    const targetPath = dataPath || (isVercel ? "/tmp/agent.db" : (process.env.DATABASE_PATH || "./agent.db"));
     initPromise = initDb(targetPath);
   }
   return initPromise;
 }
 
 export async function initDb(dataPath: string) {
+  const isVercel = !!(process.env.VERCEL || process.env.NOW_REGION || process.env.AWS_EXECUTION_ENV);
+  if (isVercel && (!dataPath || dataPath === "./agent.db")) {
+    dataPath = "/tmp/agent.db";
+  }
   try {
     const wasmPath = require.resolve("sql.js/dist/sql-wasm.wasm");
     SQL = await initSqlJs({
@@ -143,8 +148,14 @@ function saveDb() {
     const data = db.export();
     const buffer = Buffer.from(data);
     fs.writeFileSync(dbPath, buffer);
-  } catch (err) {
-    console.error("Error saving database file:", err);
+  } catch (err: any) {
+    if (err?.code === "EROFS" && dbPath !== "/tmp/agent.db") {
+      console.warn("⚠️ File system is read-only. Fallback dbPath to /tmp/agent.db");
+      dbPath = "/tmp/agent.db";
+      saveDb();
+    } else {
+      console.error("Error saving database file:", err);
+    }
   }
 }
 
