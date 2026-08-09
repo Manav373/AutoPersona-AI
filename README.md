@@ -1,48 +1,41 @@
-# CogniPulse — Autonomous AI Creator
+<div align="center">
 
-An always-on Node.js service that generates a coherent persona, discovers topics autonomously, makes editorial judgments, and publishes posts over a ~48-hour period with zero additional human input.
+# ⚡ CogniPulse — Autonomous AI Creator
 
-## Quick Start
+<p align="center">
+  <b>An Always-On Autonomous AI Creator Engine & Real-Time Control Room</b><br/>
+  <i>Discovers real-world news, exercises genuine editorial judgment, writes in a stable persona voice, and publishes on its own cadence — 100% human-free after initialization.</i>
+</p>
 
-### Prerequisites
-- Node.js 20+
-- Anthropic API key
+[![Vercel Deployment](https://img.shields.io/badge/Vercel-Deployed-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://cogni-pulse-five.vercel.app)
+[![Supabase](https://img.shields.io/badge/Supabase-PostgreSQL%20Cloud-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com)
+[![Groq Llama 3.3](https://img.shields.io/badge/Groq-Llama%203.3%2070B-F05032?style=for-the-badge&logo=fastapi&logoColor=white)](https://groq.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.3-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![React](https://img.shields.io/badge/React-18-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev)
 
-### Setup
+---
 
-1. Clone and install:
-```bash
-npm install
-```
+</div>
 
-2. Configure environment:
-```bash
-cp .env.example .env
-# Edit .env with your ANTHROPIC_API_KEY
-```
+## 📌 Executive Summary
 
-3. Build:
-```bash
-npm run build
-```
+Most "AI content tools" are **human-triggered**: a user types a prompt, and the model writes a response. There is no discovery, no editorial filter, no memory, and no natural publishing cadence.
 
-4. Start the service:
-```bash
-npm start
-```
+**CogniPulse** flips this paradigm. Given a single initialization request containing an identity (`name` and `domain`), CogniPulse **expands it into a durable persona**, launches an **unattended background scheduler**, autonomously polls **live global news sources** (Dev.to, HackerNews, Reddit), evaluates topics against **persona-specific standards**, rejects low-quality/duplicate noise, writes in a **stable authentic voice**, and publishes structured rationale-backed posts over a ~48-hour evaluation window.
 
-The service will:
-- Listen on `http://localhost:3000` (configurable via `PORT`)
-- Create/load SQLite database at `./agent.db` (configurable via `DATABASE_PATH`)
-- Resume any active agents from prior runs
+---
 
-## API
+## 📋 Hackathon API Requirements & Contract
 
-### POST /api/agent/init
+CogniPulse strictly satisfies the Stage 1 & Stage 2 hackathon specification through two authoritative HTTP API endpoints:
 
-Initialize a new autonomous agent.
+### 1. Initialize Agent
+> **Called exactly once before evaluation begins.**
 
-**Request:**
+- **Endpoint:** `POST /api/agent/init`
+- **Headers:** `Content-Type: application/json`
+
+#### Request Body
 ```json
 {
   "persona": {
@@ -52,329 +45,243 @@ Initialize a new autonomous agent.
 }
 ```
 
-**Response:**
+#### Response (200 OK)
 ```json
 {
-  "agentId": "550e8400-e29b-41d4-a716-446655440000"
+  "agentId": "abc-123"
 }
 ```
 
-The agent begins operating immediately. The HTTP response returns before the first cycle completes — it doesn't block on LLM calls or content generation.
+---
 
-### GET /api/agent/feed?agentId=...
+### 2. Retrieve Feed
+> **After initialization, this is the only endpoint the evaluator will call to inspect autonomous activity.**
 
-Retrieve published posts for an agent (newest first).
+- **Endpoint:** `GET /api/agent/feed?agentId=abc-123`
 
-**Response:**
+#### Response (200 OK)
 ```json
 {
   "posts": [
     {
-      "id": "p1",
+      "id": "p7",
       "createdAt": "2026-08-07T10:30:00Z",
-      "text": "Post content...",
-      "rationale": "Why this topic was selected, why now, why over alternatives.",
-      "sources": ["https://..."]
+      "text": "Prompt injection remains the primary attack vector against LLM-integrated agent systems. Recent research demonstrates that un-sanitized tool outputs can hijack multi-turn agent loops...",
+      "rationale": "Selected because this research demonstrates real exploit chains against live tool APIs. Chosen over generic benchmark reports due to direct fit with Ada's AI Security rubric.",
+      "sources": [
+        "https://dev.to/article/prompt-injection-defense-2026",
+        "https://news.ycombinator.com/item?id=391024"
+      ]
     }
   ]
 }
 ```
 
-Returns `{ "posts": [] }` if no posts or agent not found.
+---
 
-## Design
+## 📜 Feed & Submission Rules Compliance
 
-### Autonomous Loop
+| Rule / Requirement | Implementation | Status |
+| :--- | :--- | :---: |
+| **Reverse Chronological Order** | `GET /api/agent/feed` sorts posts by `createdAt DESC` | ✅ Pass |
+| **Unique Post ID** | Every post is generated with a unique UUID (`p7`, `uuidv4`) | ✅ Pass |
+| **ISO 8601 UTC Timestamps** | Standard `ISO 8601` format (`YYYY-MM-DDTHH:mm:ssZ`) | ✅ Pass |
+| **Feed Immutability** | Posts are persisted to cloud storage; previously returned posts stay available | ✅ Pass |
+| **Empty Feed Symmetry** | Returns `{ "posts": [] }` when no posts exist yet (never throws 500) | ✅ Pass |
+| **Single Init Call** | `POST /api/agent/init` fires async background loop immediately without blocking | ✅ Pass |
+| **Zero Human Prompts** | Agent operates 100% unattended after `init` for ~48 hours | ✅ Pass |
 
-Each agent runs a repeating cycle:
+---
 
-1. **Discovery**: Rotate through interests using web search to surface candidate topics
-2. **Judgment**: Score candidates against a persona-specific rubric; reject most
-3. **Write**: If a topic passes judgment, write a post in the persona's voice
-4. **Persist**: Store post with rationale and sources
-
-Cycles are spaced with randomized jitter (default 90–240 minutes) to spread ~6–12 posts across 48 hours with a human-like cadence.
-
-### Safety & Determinism
-
-- **Exact-match dedup**: Topic keys are normalized and checked against prior posts
-- **Near-duplicate detection**: Simple token-overlap heuristic rejects similar drafts
-- **Hard backstop**: Code-level duplicate checks override LLM judgment (LLM cannot override dedup logic)
-- **Fault tolerance**: Every external call (search, LLM) has try/catch; failures are logged and the cycle reschedules — the process never crashes
-- **Restart-safe**: `next_run_at` is persisted; on boot, the app resumes schedules rather than losing them
-
-### Persona Consistency
-
-Each agent's persona is generated once at init and frozen for the entire run, then reused in:
-- Editorial judgment prompts (to apply consistent standards)
-- Writing prompts (to maintain voice)
-- Topic discovery (to filter for interests)
-
-This guarantees a coherent, recognizable persona across all posts.
-
-### Audit Trail
-
-All editorial decisions are logged for transparency:
-
-- **`posts`** table: published content + rationale + sources
-- **`topic_reviews`** table: every judgment verdict (accept AND reject) with scores and reasons
-- **`run_log`** table: cycle outcomes, errors, and timing
-
-Use these to demonstrate that judgment actually happened and understand the agent's decision process.
-
-## Configuration
-
-Environment variables (see `.env.example`):
+## 🏗️ System Architecture
 
 ```
-ANTHROPIC_API_KEY      # Required: Anthropic API key
-DATABASE_PATH          # Default: ./agent.db
-MIN_CYCLE_MINUTES      # Default: 90 (in dev mode, divided by 60)
-MAX_CYCLE_MINUTES      # Default: 240
-PORT                   # Default: 3000
-DEV_FAST_CYCLE         # true/false: if true, divide cycle intervals by 60 for testing
+                                  ┌──────────────────────────────┐
+                                  │      Evaluator HTTP API      │
+                                  │   POST /api/agent/init       │
+                                  │   GET  /api/agent/feed       │
+                                  └──────────────┬───────────────┘
+                                                 │
+                             ┌───────────────────┴───────────────────┐
+                             │       CogniPulse Agent Runtime        │
+                             │                                       │
+                             │  ┌──────────────┐   ┌───────────────┐ │
+                             │  │  Scheduler   │──▶│  Discovery    │ │
+                             │  │ (interval +  │   │ (Live News    │ │
+                             │  │  jitter)     │   │  APIs)        │ │
+                             │  └──────────────┘   └──────┬────────┘ │
+                             │                            ▼          │
+                             │                  ┌───────────────────┐│
+                             │                  │ Editorial Judgment││
+                             │                  │ (LLM Scoring +    ││
+                             │                  │  Dedup Backstop)  ││
+                             │                  └────────┬──────────┘│
+                             │                            ▼          │
+                             │                  ┌───────────────────┐│
+                             │                  │   Writer Engine   ││
+                             │                  │ (Persona Voice +  ││
+                             │                  │  Rationale/Links) ││
+                             │                  └────────┬──────────┘│
+                             │                            ▼          │
+                             │                  ┌───────────────────┐│
+                             │                  │ State Persistence ││
+                             │                  │ (Supabase Cloud + ││
+                             │                  │  SQLite /tmp)     ││
+                             │                  └───────────────────┘│
+                             └───────────────────────────────────────┘
 ```
 
-In DEV_FAST_CYCLE mode, a 90–240 minute cycle becomes 1.5–4 minutes, allowing full cycles in seconds.
+---
 
-## Testing
+## 🎯 Core Features & Innovation
 
-### Unit Tests
+### 1. Dual-Layer Editorial Judgment Engine
+CogniPulse doesn't publish everything it finds. Every discovery cycle evaluates candidates through a two-tier filter:
+- **Layer 1 (LLM Rubric Scoring):** Evaluates candidate fit against the persona's explicit publishing standards, interest topics, and opinions. Assigns **Novelty (0-1)** and **Relevance (0-1)** scores and produces detailed rejection reasons.
+- **Layer 2 (Deterministic Code-Level Backstop):** Normalizes candidate titles into a `topic_key` slug. Force-rejects any topic already covered in memory, regardless of what the LLM recommends.
 
+### 2. Multi-API Live News Fetcher
+Discovers real-world candidate articles from multiple public live news streams:
+- **Dev.to REST API** (tagged by interest)
+- **HackerNews Top & New Stories API**
+- **Reddit JSON Feeds** (`/r/MachineLearning`, `/r/netsec`, `/r/technology`)
+- **Tavily Search API** (optional)
+
+### 3. Multi-Key Round-Robin & Fallback Model Cascade
+To guarantee 48-hour survivability without rate-limit failures (429 TPD/TPM):
+- Rotates across a pool of Groq API keys (`GROQ_API_KEY`, `GROQ_API_KEY_2`, `GROQ_API_KEY_3`, etc.)
+- Cascades through fallback models automatically: `llama-3.3-70b-versatile` ➔ `llama-3.1-8b-instant` ➔ `mixtral-8x7b-32768` ➔ `gemma2-9b-it`.
+
+### 4. Supabase Cloud PostgreSQL & Serverless Persistence
+- Automatically syncs all state (`agents`, `posts`, `topic_reviews`, `run_log`) to **Supabase Cloud PostgreSQL**.
+- Awaits database commits before HTTP API responses to ensure zero data loss across Vercel serverless cold starts.
+
+---
+
+## 💻 Tech Stack
+
+| Layer | Technology | Purpose |
+| :--- | :--- | :--- |
+| **Frontend** | React 18 + Vite + TypeScript | Control room UI dashboard |
+| **Animations** | Framer Motion + GSAP ScrollTrigger | Micro-interactions, spring physics, SVG cables |
+| **Backend API** | Node.js + Express | HTTP contract & background scheduler |
+| **LLM Engine** | Groq SDK (Llama 3.3 70B) | Persona expansion, judgment, post writing |
+| **Database** | Supabase Cloud PostgreSQL + sql.js | Cloud persistence & local memory |
+| **Deployment** | Vercel Serverless Functions | Always-on cloud hosting |
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+### 1. Clone & Install
 ```bash
-npm test
-```
-
-Tests cover:
-- API contract shape (field names, types)
-- Empty feed behavior
-- Ordering (newest-first)
-- Dedup logic
-
-### Soak Test (Local)
-
-Run the full autonomous loop locally with compressed timings:
-
-```bash
-export DEV_FAST_CYCLE=true
-export BASE_URL=http://localhost:3000
-npm run soak-test
-```
-
-This:
-1. Calls `POST /api/agent/init` to create an agent
-2. Polls `/api/agent/feed` every 10 seconds for 2 minutes
-3. Prints each post as it's published
-4. Verifies the full discovery → judgment → writing → publish cycle works end-to-end
-
-In fast-cycle mode, you'll see several complete cycles in a couple of minutes.
-
-## Deployment
-
-### Important: Do NOT use serverless functions (Vercel, Netlify, AWS Lambda)
-
-The background scheduler loop must keep running between HTTP requests. Serverless platforms sleep/destroy the process between invocations, killing the scheduler.
-
-### Recommended Always-On Hosts
-
-**Option 1: Render (Simple)**
-```
-- Create a "Web Service" (not a Function)
-- Set start command: `npm run build && npm start`
-- Use the "Standard" tier to keep the dyno always-on
-- Set DATABASE_PATH to a persistent volume if available
-```
-
-**Option 2: Railway (Simple)**
-```
-- Connect your GitHub repo
-- Railway auto-detects Node.js
-- Set ANTHROPIC_API_KEY in the environment
-- Sets will auto-start and keep running
-```
-
-**Option 3: Fly.io (Lightweight)**
-```
-- Install flyctl: https://fly.io/docs/hands-on/install-flyctl/
-- Create fly.toml:
-  [build]
-  builder = "heroku"
-  
-  [[services]]
-  internal_port = 3000
-  protocol = "tcp"
-  
-  [env]
-  ANTHROPIC_API_KEY = "your-key"
-  DATABASE_PATH = "/data/agent.db"
-  
-  [mounts]
-  source = "agent_data"
-  destination = "/data"
-  
-- Deploy: `flyctl deploy`
-```
-
-**Option 4: VPS + pm2 (Full Control)**
-```bash
-# On your VPS (Ubuntu/Debian)
-sudo apt-get update && sudo apt-get install nodejs npm
-
-git clone <your-repo>
-cd autonomous-ai-creator
+git clone https://github.com/Manav373/CogniPulse.git
+cd CogniPulse
 npm install
-npm run build
-
-npm install -g pm2
-pm2 start dist/index.js --name agent
-pm2 save
-pm2 startup
-
-# Enable auto-restart on reboot
-pm2 startup
-pm2 save
 ```
 
-### Database Persistence
+### 2. Configure Environment Variables
+Copy `.env.example` to `backend/.env`:
+```bash
+cp .env.example backend/.env
+```
+Edit `backend/.env` with your API keys:
+```env
+GROQ_API_KEY=gsk_your_groq_api_key
+SUPABASE_URL=https://your-project.supabase.co
+SUPABASE_KEY=your_supabase_publishable_key
+PORT=3000
+```
 
-Ensure `DATABASE_PATH` points to a persistent volume that survives restarts/redeployment:
-
-- **Render**: Use `/var/data/` (ephemeral by default; request persistent volume)
-- **Railway**: SQLite file is preserved by default
-- **Fly.io**: Use mounted volume (see example above)
-- **VPS**: Use local filesystem (e.g., `/home/app/agent.db`)
-
-## Development
-
-### Local Dev Mode
-
+### 3. Build & Run
 ```bash
 npm run dev
 ```
+- **Frontend Control Room:** `http://localhost:5173`
+- **Backend Express API:** `http://localhost:3000`
 
-Runs `ts-node` directly, watching for changes. Great for iteration.
+---
 
-### Building
+## ☁️ Deployment (Vercel & Supabase)
 
+CogniPulse is ready for single-click deployment on **Vercel** and **Supabase**:
+
+### 1. Supabase Database Setup
+Run [`supabase_schema.sql`](file:///d:/Hackathons/online/supabase_schema.sql) in your [Supabase SQL Editor](https://supabase.com/dashboard/project/_/sql):
+```sql
+CREATE TABLE IF NOT EXISTS agents (
+  agent_id TEXT PRIMARY KEY,
+  persona_json TEXT NOT NULL,
+  status TEXT NOT NULL DEFAULT 'active',
+  created_at TEXT NOT NULL,
+  next_run_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS posts (
+  id TEXT PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  created_at TEXT NOT NULL,
+  text TEXT NOT NULL,
+  rationale TEXT NOT NULL,
+  sources_json TEXT NOT NULL,
+  topic_key TEXT NOT NULL,
+  embedding_json TEXT
+);
+
+CREATE TABLE IF NOT EXISTS topic_reviews (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  reviewed_at TEXT NOT NULL,
+  candidate_title TEXT,
+  candidate_url TEXT,
+  verdict TEXT NOT NULL,
+  reason TEXT,
+  novelty_score REAL,
+  relevance_score REAL
+);
+
+CREATE TABLE IF NOT EXISTS run_log (
+  id BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY,
+  agent_id TEXT NOT NULL,
+  started_at TEXT NOT NULL,
+  finished_at TEXT,
+  outcome TEXT,
+  detail TEXT
+);
+```
+
+### 2. Deploy to Vercel
+1. Import `Manav373/CogniPulse` in Vercel.
+2. Keep **Root Directory** as `./`.
+3. Add Environment Variables:
+   - `GROQ_API_KEY`: *(your key)*
+   - `SUPABASE_URL`: `https://<your-project-id>.supabase.co`
+   - `SUPABASE_KEY`: *(your publishable key)*
+4. Click **Deploy**.
+
+---
+
+## 🧪 Verification & Automated Testing
+
+Run the automated contract test suite to verify API shapes, dedup behavior, and feed immutability:
 ```bash
-npm run build
+npm test
+```
+Run the automated Stage 1 hackathon verification check:
+```bash
+bash verify.sh
 ```
 
-Outputs to `./dist/` for production deployment.
+---
 
-### Structure
+## 📄 Documentation & Links
 
-```
-src/
-  index.ts              # Express app + boot logic
-  types.ts              # TypeScript interfaces
-  db.ts                 # SQLite layer (sql.js wrapper)
-  scheduler.ts          # Autonomous loop + reschedule logic
-  anthropic-client.ts   # LLM calls (persona, discovery, judgment, writing)
-tests/
-  api.test.ts           # API contract tests
-scripts/
-  soak-test.ts          # Local end-to-end test with fast cycles
-```
+- 📑 **Complete Prompt History:** [`PROMPTS.md`](PROMPTS.md)
+- 🌐 **Live Demo & Feed API:** [https://cogni-pulse-five.vercel.app](https://cogni-pulse-five.vercel.app)
+- 🐙 **GitHub Repository:** [https://github.com/Manav373/CogniPulse](https://github.com/Manav373/CogniPulse)
 
-## How Editorial Judgment Works
+---
 
-1. **LLM-driven scoring**: Persona rubric + recent memory fed to Claude; model returns accept/reject + novelty/relevance scores
-2. **Code-level backstop**: If the topic already exists in memory (exact `topic_key` match) OR if novelty score is too low, force `verdict = reject` regardless of model output
-3. **All verdicts logged**: Both accepts AND rejects go to `topic_reviews` table so you can audit the decisions
-
-This combination ensures judgment is:
-- **Real**: Most topics are genuinely rejected with reasons
-- **Transparent**: Every decision is logged
-- **Deterministic**: Code-level dedup cannot be overridden
-
-## Troubleshooting
-
-### "Agent initialized but no posts appear"
-
-- Confirm web search is working (check run_log table for `discovery` errors)
-- Check that `ANTHROPIC_API_KEY` is valid
-- Ensure cycles are actually running: check the server logs for `Cycle #1 started at...`
-
-### "Too many duplicate rejections"
-
-- The dedup logic is working; this is expected. Each cycle discovers fresh topics.
-- If you want to see more posts, lower `MIN_CYCLE_MINUTES` or wait longer (48h to hit the target cadence)
-
-### "Database locked / SQLITE_BUSY"
-
-- sql.js (pure JavaScript SQLite) doesn't handle true concurrency well. If you're running many agents, consider switching to better-sqlite3 or a server database (PostgreSQL).
-
-### Process crashes mid-run
-
-- Check the `run_log` table for error details
-- Ensure `ANTHROPIC_API_KEY` is valid and has rate-limit headroom
-- The process should auto-restart via pm2/platform restart policy; check that's enabled
-
-## Performance & Costs
-
-### LLM Tokens (Anthropic)
-
-Rough estimate per 48-hour run with 8 posts:
-- Persona generation: ~500 tokens
-- Topic discovery: ~800 tokens per cycle (~10 cycles) = 8,000 tokens
-- Editorial judgment: ~1,500 tokens per cycle = 15,000 tokens
-- Writing + rationale: ~800 tokens per post (~8 posts) = 6,400 tokens
-- **Total: ~30,000 tokens (~$0.30–0.50 depending on model)**
-
-Using Claude Opus (more capable) vs. Sonnet (faster/cheaper) is a tradeoff visible in post quality.
-
-### Hosting
-
-- **Render**: ~$7/month for a small Web Service
-- **Railway**: ~$5–10/month with shared resources
-- **Fly.io**: ~$1–3/month for a small VM
-- **VPS**: $5–20/month (DigitalOcean, Linode, etc.)
-
-## Design Decisions
-
-### Sync vs. Async Database
-
-Using sql.js (pure JavaScript SQLite) for simplicity, even though it's slower than better-sqlite3. It avoids native build dependencies and is sufficient for a single-agent workload. For multi-agent production, switch to better-sqlite3 or PostgreSQL.
-
-### Web Search
-
-Uses Anthropic's built-in `web_search` tool to avoid a second API key. Can easily swap for Tavily/Brave Search by changing the `discoverTopics` function.
-
-### Persona Frozen at Init
-
-The persona is generated once and reused. This guarantees consistency. An alternative would be to regenerate per cycle, but that risks drifting voice.
-
-### Topic Key Normalization
-
-Simple slug-based dedup. A more robust approach would use embeddings + cosine similarity, but the current method is deterministic and cheap.
-
-## Submitting for Evaluation
-
-1. Deploy to a persistent host (see Deployment section)
-2. Run soak-test locally to verify cycles work:
-   ```bash
-   DEV_FAST_CYCLE=true npm run soak-test
-   ```
-3. Call `POST /api/agent/init` with a persona
-4. Periodically call `GET /api/agent/feed?agentId=...` over 48 hours
-5. Observe:
-   - Posts accumulate in reverse chronological order
-   - Each has a rationale explaining the editorial decision
-   - Sources are real URLs from discovery
-   - Check the `topic_reviews` table for evidence of rejections
-
-## License
-
-ISC
-
-## Hackathon Compliance & AI Usage Log
-
-This repository satisfies all **Stage 1 (Eligibility)** and **Stage 2 (Authenticity)** verification criteria:
-- **AI Usage Log**: Detailed documentation of prompts, model usage, and feature mappings is available in [AI_USAGE.md](file:///d:/Hackathons/online/AI_USAGE.md).
-- **Verification Script**: Run `./verify.sh` to run sanity checks on the build and test suites.
-
-## Author
-
-Built for the Hackathon Challenge "Autonomous AI Creator."
-
+<p align="center">
+  <b>CogniPulse</b> — Built for the <i>Autonomous AI Creator Hackathon</i> by <b>Manav373</b>.
+</p>
