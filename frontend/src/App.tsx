@@ -13,9 +13,8 @@ import { PersonaTab } from './components/PersonaTab';
 import { LogsTab } from './components/LogsTab';
 import { CreateAgentModal } from './components/CreateAgentModal';
 import { Agent, Post, TopicReview, RunLog, SystemStats } from './types';
-import { Share2, Save, MoreHorizontal, Cpu, Code, Filter, RefreshCw, Database, Send, Clock, Search, Scale, Sparkles, AlertCircle } from 'lucide-react';
+import { Share2, Save, MoreHorizontal, Cpu, Code, Filter, RefreshCw, Database, Send, Clock, Search, Scale, Sparkles, AlertCircle, Bell, Zap, Activity } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import './styles.css';
 
 const VIEW_TITLES: Record<NavView, { title: string; sub: string }> = {
   overview: { title: 'Overview Dashboard', sub: 'Monitor active persona agents, metrics, and publishing performance' },
@@ -43,7 +42,6 @@ export function App() {
   const [selectedNode, setSelectedNode] = useState<SelectedNodeInfo | null>(null);
   const [isActiveToggle, setIsActiveToggle] = useState(true);
 
-  // Workflow nodes & connections state
   const [nodes, setNodes] = useState<CanvasNodeData[]>(INITIAL_NODES);
   const [connections, setConnections] = useState<ConnectionData[]>(INITIAL_CONNECTIONS);
 
@@ -69,14 +67,12 @@ export function App() {
     return m;
   }, [agents]);
 
-  // Data fetching
   const fetchAgents = async () => {
     try {
       const r = await fetch('/api/agents');
       if (r.ok) {
         const d = await r.json();
-        const list = d.agents || [];
-        setAgents(list);
+        setAgents(d.agents || []);
       }
     } catch {}
   };
@@ -122,15 +118,13 @@ export function App() {
   useEffect(() => {
     if (selectedAgentId !== 'all') {
       const found = agents.find((a) => a.agentId === selectedAgentId);
-      if (found) {
-        setIsActiveToggle(found.status === 'active');
-      }
+      if (found) setIsActiveToggle(found.status === 'active');
     }
   }, [selectedAgentId, agents]);
 
   const handleToggleAgentStatus = async () => {
     let id = selectedAgentId;
-    if (id === 'all' && agents.length > 0) { id = agents[0].agentId; }
+    if (id === 'all' && agents.length > 0) id = agents[0].agentId;
     if (!id || id === 'all') return;
 
     const nextStatus = isActiveToggle ? 'stopped' : 'active';
@@ -355,7 +349,7 @@ export function App() {
   };
 
   return (
-    <div className="app-shell">
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#07070d' }}>
       {/* 1. Leftmost Navigation Sidebar */}
       <LeftNavSidebar
         agents={agents}
@@ -367,151 +361,113 @@ export function App() {
         postsCount={posts.length}
       />
 
-      {/* 2. Add Nodes Palette Sidebar (Only shown in Workflows View) */}
+      {/* 2. Add Nodes Palette Sidebar */}
       {activeView === 'workflows' && (
         <AddNodesSidebar onAddNode={handleAddNodeFromSidebar} />
       )}
 
       {/* 3. Center Workspace Area */}
-      <div className="center-workspace">
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative', background: '#050508' }}>
         {/* Workspace Topbar */}
-        <div className="workspace-topbar">
-          <div className="topbar-title-section">
-            <h2>{currentTitle.title}</h2>
-            <p>{currentTitle.sub}</p>
-          </div>
-
-          <div className="topbar-middle-tabs">
-            <button
-              className={`topbar-tab-btn ${activeView === 'workflows' ? 'active' : ''}`}
-              onClick={() => handleSetActiveView('workflows')}
-            >
-              Editor
-            </button>
-            <button
-              className={`topbar-tab-btn ${activeView === 'executions' ? 'active' : ''}`}
-              onClick={() => handleSetActiveView('executions')}
-            >
-              Executions
-            </button>
-          </div>
-
-          <div className="topbar-right-controls">
-            <div className="inactive-toggle-wrapper">
-              <span>{isActiveToggle ? 'Active' : 'Inactive'}</span>
-              <div
-                className={`toggle-switch-bg ${isActiveToggle ? 'active' : ''}`}
-                onClick={handleToggleAgentStatus}
-                title={isActiveToggle ? 'Click to pause automatic background cycles' : 'Click to activate automatic background cycles'}
-              >
-                <div className="toggle-switch-handle" />
-              </div>
+        <div style={{
+          height: '52px', padding: '0 24px', display: 'flex', alignItems: 'center',
+          justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'rgba(9, 9, 11, 0.92)', zIndex: 10, flexShrink: 0, backdropFilter: 'blur(16px)',
+        }}>
+          {/* Left: View Title */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <div style={{
+              width: '8px', height: '8px', borderRadius: '50%', background: '#6366f1',
+              boxShadow: '0 0 10px #6366f1', flexShrink: 0,
+            }} />
+            <div>
+              <h2 style={{ fontSize: '14px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>{currentTitle.title}</h2>
+              <p style={{ fontSize: '10px', color: '#71717a', margin: '1px 0 0 0' }}>{currentTitle.sub}</p>
             </div>
+          </div>
 
-            <button className="btn-topbar btn-topbar-outline" onClick={() => {
-              const url = window.location.href;
-              navigator.clipboard.writeText(url);
-              showToast(`🔗 Agent Workflow link copied to clipboard!`);
-            }}>
-              <Share2 size={13} /> Share
-            </button>
+          {/* Center: Global Search Bar */}
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '8px', padding: '6px 14px',
+            background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.08)',
+            borderRadius: '100px', width: '320px', transition: 'all 0.2s ease',
+          }}>
+            <Search size={13} color="#71717a" />
+            <input
+              type="text"
+              placeholder="Search persona, workflow, logs..."
+              style={{
+                background: 'transparent', border: 'none', outline: 'none',
+                color: '#ffffff', fontSize: '11px', width: '100%', fontFamily: 'Inter, sans-serif',
+              }}
+            />
+            <span style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', background: 'rgba(255, 255, 255, 0.06)', padding: '2px 6px', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace' }}>
+              ⌘K
+            </span>
+          </div>
 
-            <button
-              className="btn-topbar btn-topbar-purple"
-              onClick={() => {
-                const name = agentsMap.get(selectedAgentId)?.persona.name || 'Persona';
-                showToast(`💾 Agent "${name}" Workflow configuration saved successfully!`);
+          {/* Right: Persona Selector & Quick Actions */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+            <select
+              value={selectedAgentId}
+              onChange={(e) => setSelectedAgentId(e.target.value)}
+              style={{
+                padding: '6px 12px', background: 'rgba(20, 20, 32, 0.85)',
+                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
+                color: '#ffffff', fontSize: '11px', fontWeight: 600, outline: 'none',
+                fontFamily: 'Inter, sans-serif', cursor: 'pointer',
               }}
             >
-              <Save size={13} /> Save
+              <option value="all">🤖 All Active Personas ({agents.length})</option>
+              {agents.map((a) => (
+                <option key={a.agentId} value={a.agentId}>
+                  {a.persona.name} — {a.persona.domain}
+                </option>
+              ))}
+            </select>
+
+            {/* System Notification Bell */}
+            <button
+              onClick={() => showToast('🔔 All autonomous persona agents running normally.')}
+              style={{
+                width: '32px', height: '32px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.04)',
+                border: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center',
+                justifyContent: 'center', color: '#a1a1aa', cursor: 'pointer', position: 'relative',
+              }}
+              title="System Notifications"
+            >
+              <Bell size={13} />
+              <span style={{ position: 'absolute', top: '7px', right: '7px', width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1' }} />
             </button>
 
-            <div style={{ position: 'relative' }}>
-              <button
-                className="btn-topbar btn-topbar-outline"
-                style={{ padding: '6px' }}
-                onClick={() => setShowMoreMenu(!showMoreMenu)}
-                title="More Workflow Options"
-              >
-                <MoreHorizontal size={14} />
-              </button>
-
-              {showMoreMenu && (
-                <div
-                  style={{
-                    position: 'absolute',
-                    top: '36px',
-                    right: 0,
-                    background: 'var(--bg-card)',
-                    border: '1px solid var(--border)',
-                    borderRadius: '8px',
-                    padding: '6px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '4px',
-                    zIndex: 100,
-                    width: '210px',
-                    boxShadow: '0 8px 24px rgba(0,0,0,0.6)',
-                  }}
-                >
-                  <button
-                    className="topbar-tab-btn"
-                    style={{ justifyContent: 'flex-start', fontSize: '11px', padding: '6px 10px' }}
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      handleTrigger();
-                    }}
-                  >
-                    ⚡ Trigger Real Cycle
-                  </button>
-                  <button
-                    className="topbar-tab-btn"
-                    style={{ justifyContent: 'flex-start', fontSize: '11px', padding: '6px 10px' }}
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      handleSetActiveView('executions');
-                    }}
-                  >
-                    ⚙ Open Executions Audit
-                  </button>
-                  <button
-                    className="topbar-tab-btn"
-                    style={{ justifyContent: 'flex-start', fontSize: '11px', padding: '6px 10px' }}
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      if (selectedAgentId !== 'all') {
-                        navigator.clipboard.writeText(selectedAgentId);
-                        showToast(`📋 Copied Agent ID: ${selectedAgentId}`);
-                      } else {
-                        showToast('Please select a specific agent persona');
-                      }
-                    }}
-                  >
-                    📋 Copy Agent ID
-                  </button>
-                  <button
-                    className="topbar-tab-btn"
-                    style={{ justifyContent: 'flex-start', fontSize: '11px', padding: '6px 10px', color: '#f87171' }}
-                    onClick={() => {
-                      setShowMoreMenu(false);
-                      setNodes(INITIAL_NODES);
-                      setConnections(INITIAL_CONNECTIONS);
-                      showToast('🔄 Reset workflow canvas layout & cables');
-                    }}
-                  >
-                    🔄 Reset Canvas Layout
-                  </button>
-                </div>
-              )}
-            </div>
+            {/* Quick Run Cycle Button */}
+            <motion.button
+              onClick={handleTrigger}
+              disabled={isTriggering}
+              whileHover={{ scale: 1.04 }}
+              whileTap={{ scale: 0.96 }}
+              style={{
+                padding: '6px 14px', borderRadius: '8px', fontSize: '11px',
+                fontWeight: 700, cursor: 'pointer', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+                border: 'none', color: '#ffffff', fontFamily: 'Inter, sans-serif',
+                display: 'flex', alignItems: 'center', gap: '6px', boxShadow: '0 0 14px rgba(99, 102, 241, 0.3)',
+                opacity: isTriggering ? 0.7 : 1,
+              }}
+              title="Trigger real workflow cycle"
+            >
+              <Zap size={13} className={isTriggering ? 'spin' : ''} />
+              {isTriggering ? 'Running...' : 'Run Cycle'}
+            </motion.button>
           </div>
         </div>
 
         {/* Viewport Content */}
-        {renderCenterView()}
+        <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflowY: activeView === 'workflows' ? 'hidden' : 'auto', width: '100%', height: '100%', boxSizing: 'border-box' }}>
+          {renderCenterView()}
+        </div>
       </div>
 
-      {/* 4. Right Inspector Panel (Only shown in Workflows View) */}
+      {/* 4. Right Inspector Panel */}
       {activeView === 'workflows' && (
         <RightInspectorPanel
           selectedNode={selectedNode}
@@ -540,12 +496,22 @@ export function App() {
       <AnimatePresence>
         {toastMessage && (
           <motion.div
-            className="toast-wrap"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 20, opacity: 0 }}
+            style={{
+              position: 'fixed', bottom: '20px', left: '50%', transform: 'translateX(-50%)',
+              zIndex: 2000, pointerEvents: 'none',
+            }}
           >
-            <div className="toast-msg">{toastMessage}</div>
+            <div style={{
+              background: '#121215', border: '1px solid rgba(255, 255, 255, 0.1)',
+              boxShadow: '0 12px 40px rgba(0,0,0,0.7)', color: '#ffffff',
+              padding: '10px 20px', borderRadius: '10px', fontSize: '12px',
+              fontWeight: 600, whiteSpace: 'nowrap', backdropFilter: 'blur(16px)',
+            }}>
+              {toastMessage}
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
