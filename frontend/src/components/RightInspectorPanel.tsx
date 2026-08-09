@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { SelectedNodeInfo, CanvasNodeData, ConnectionData } from './WorkflowCanvas';
 import { SystemStats, Agent, RunLog, TopicReview } from '../types';
 import { Clock, ExternalLink, Link2, PanelRightClose, PanelRightOpen, RefreshCw, CheckCircle2, Play, Cpu, Database, Sparkles, Scale, Search } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface RightInspectorPanelProps {
   selectedNode: SelectedNodeInfo | null;
@@ -122,48 +122,66 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
 
   const latestExecId = latestLog?.id ? `#EXEC-${latestLog.id}` : '#EXEC-1042';
 
-  if (isCollapsed) {
-    return (
-      <aside style={{
-        width: '48px', minWidth: '48px', background: '#0d0d10',
-        borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
-        flexDirection: 'column', height: '100vh', zIndex: 15, alignItems: 'center',
-        transition: 'all 0.2s ease',
-      }}>
-        <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center', width: '100%' }}>
-          <button
-            onClick={() => setIsCollapsed(false)}
-            title="Open Right Inspector Panel"
-            style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}
-          >
-            <PanelRightOpen size={16} />
-          </button>
-        </div>
-
-        <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={() => setIsCollapsed(false)}
-            title={`Selected Node: ${node.title}`}
-            style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
-          >
-            <Icon size={16} />
-          </button>
-        </div>
-      </aside>
-    );
-  }
-
   return (
     <motion.aside
-      initial={{ opacity: 0, x: 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.25, ease: 'easeOut' }}
+      initial={false}
+      animate={{ width: isCollapsed ? 48 : 320 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 32 }}
       style={{
-        width: '320px', minWidth: '320px', background: '#0d0d10',
-        borderLeft: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex',
-        flexDirection: 'column', height: '100vh', zIndex: 15, transition: 'all 0.2s ease',
+        background: '#0d0d10',
+        borderLeft: '1px solid rgba(255, 255, 255, 0.08)',
+        display: 'flex',
+        flexDirection: 'column',
+        height: '100vh',
+        zIndex: 15,
+        overflow: 'hidden',
+        position: 'relative',
+        flexShrink: 0,
       }}
     >
+      <AnimatePresence mode="wait">
+        {isCollapsed ? (
+          <motion.div
+            key="collapsed-inspector"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', alignItems: 'center', width: '100%' }}
+          >
+            <div style={{ padding: '12px 0', display: 'flex', justifyContent: 'center', width: '100%' }}>
+              <motion.button
+                onClick={() => setIsCollapsed(false)}
+                title="Open Right Inspector Panel"
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px' }}
+              >
+                <PanelRightOpen size={16} />
+              </motion.button>
+            </div>
+
+            <div style={{ paddingTop: '16px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px' }}>
+              <motion.button
+                onClick={() => setIsCollapsed(false)}
+                title={`Selected Node: ${node.title}`}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                style={{ width: '34px', height: '34px', borderRadius: '8px', background: 'rgba(99, 102, 241, 0.12)', border: '1px solid rgba(99, 102, 241, 0.25)', color: '#818cf8', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+              >
+                <Icon size={16} />
+              </motion.button>
+            </div>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="expanded-inspector"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+            style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '320px' }}
+          >
       {/* Topbar with Executions Button & Collapse Toggle */}
       <div style={{ padding: '12px 16px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' }}>
         <button
@@ -357,6 +375,9 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
           <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{latestExecId}</span>
         </div>
       </div>
-    </motion.aside>
+    </motion.div>
+  )}
+</AnimatePresence>
+</motion.aside>
   );
 };
