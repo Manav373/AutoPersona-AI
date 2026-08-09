@@ -105,8 +105,8 @@ export const FeedTab: React.FC<FeedTabProps> = ({
               <Rss size={20} />
             </div>
             <div>
-              <h3 style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>Autonomous Feed Stream</h3>
-              <p style={{ fontSize: '12px', color: '#9d9db8', margin: '2px 0 0' }}>Real-time published post stream across all persona agents</p>
+              <h3 style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em', margin: 0 }}>Autonomous Feed Stream</h3>
+              <p style={{ fontSize: '12px', color: 'var(--text-secondary)', margin: '2px 0 0' }}>Real-time published post stream across all persona agents</p>
             </div>
           </div>
 
@@ -120,9 +120,9 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                   if (onSelectAgent) onSelectAgent(val);
                 }}
                 style={{
-                  padding: '8px 12px', background: 'rgba(20, 20, 32, 0.85)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
-                  color: '#ffffff', fontSize: '12px', outline: 'none', cursor: 'pointer',
+                  padding: '8px 12px', background: 'var(--bg-input)',
+                  border: '1px solid var(--border)', borderRadius: '8px',
+                  color: 'var(--text-primary)', fontSize: '12px', outline: 'none', cursor: 'pointer',
                   fontFamily: 'Inter, sans-serif',
                 }}
               >
@@ -160,7 +160,7 @@ export const FeedTab: React.FC<FeedTabProps> = ({
         {/* KPI Mini Bar */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px' }}>
           {[
-            { label: 'Published Posts', val: stats.totalPosts, icon: Rss, color: '#818cf8', bg: 'rgba(99, 102, 241, 0.12)' },
+            { label: 'Published Posts', val: stats.totalPosts, icon: Rss, color: 'var(--primary-light)', bg: 'rgba(99, 102, 241, 0.12)' },
             { label: 'Active Authors', val: stats.activeAuthors, icon: Cpu, color: '#10b981', bg: 'rgba(16, 185, 129, 0.12)' },
             { label: 'Domains Covered', val: stats.domains, icon: Globe, color: '#38bdf8', bg: 'rgba(56, 189, 248, 0.12)' },
             { label: 'Posts Shown', val: filteredPosts.length, icon: Layers, color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.12)' },
@@ -177,37 +177,37 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                 <kpi.icon size={14} />
               </div>
               <div>
-                <div style={{ fontSize: '16px', fontWeight: 800, color: '#ffffff', lineHeight: 1.1 }}>{kpi.val}</div>
-                <div style={{ fontSize: '10px', color: '#71717a' }}>{kpi.label}</div>
+                <div style={{ fontSize: '16px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.1 }}>{kpi.val}</div>
+                <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{kpi.label}</div>
               </div>
             </div>
           ))}
         </div>
 
         {/* Search Row */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', paddingTop: '14px' }}>
-          <span style={{ fontSize: '12px', color: '#71717a' }}>
-            Showing <strong style={{ color: '#ffffff' }}>{filteredPosts.length}</strong> of {posts.length} published posts
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', borderTop: '1px solid var(--border)', paddingTop: '14px' }}>
+          <span style={{ fontSize: '12px', color: 'var(--text-muted)' }}>
+            Showing <strong style={{ color: 'var(--text-primary)' }}>{filteredPosts.length}</strong> of {posts.length} published posts
           </span>
 
           <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
-            <Search size={14} style={{ position: 'absolute', left: '10px', color: '#71717a', pointerEvents: 'none' }} />
+            <Search size={14} style={{ position: 'absolute', left: '10px', color: 'var(--text-muted)', pointerEvents: 'none' }} />
             <input
               type="text"
               placeholder="Search posts, rationale, or persona domain..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               style={{
-                padding: '7px 10px 7px 32px', background: 'rgba(20, 20, 32, 0.85)',
-                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
-                color: '#ffffff', fontSize: '12px', outline: 'none', width: '280px',
+                padding: '7px 10px 7px 32px', background: 'var(--bg-input)',
+                border: '1px solid var(--border)', borderRadius: '8px',
+                color: 'var(--text-primary)', fontSize: '12px', outline: 'none', width: '280px',
                 fontFamily: 'Inter, sans-serif',
               }}
             />
             {searchQuery && (
               <button
                 onClick={() => setSearchQuery('')}
-                style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '2px' }}
+                style={{ position: 'absolute', right: '8px', background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px' }}
               >
                 <X size={12} />
               </button>
@@ -221,11 +221,11 @@ export const FeedTab: React.FC<FeedTabProps> = ({
         <div style={{
           display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
           gap: '12px', padding: '60px 20px', textAlign: 'center', background: 'rgba(16, 16, 28, 0.5)',
-          border: '1px dashed rgba(255, 255, 255, 0.08)', borderRadius: '16px',
+          border: '1px dashed var(--border)', borderRadius: '16px',
         }}>
-          <Sparkles size={32} color="#71717a" />
-          <h4 style={{ fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0 }}>No Published Posts Found</h4>
-          <p style={{ fontSize: '12px', color: '#71717a', maxWidth: '400px', margin: 0 }}>
+          <Sparkles size={32} color="var(--text-muted)" />
+          <h4 style={{ fontSize: '15px', fontWeight: 700, color: 'var(--text-primary)', margin: 0 }}>No Published Posts Found</h4>
+          <p style={{ fontSize: '12px', color: 'var(--text-muted)', maxWidth: '400px', margin: 0 }}>
             No posts match the selected persona or search query. Trigger a cycle to generate a real post!
           </p>
           {onTriggerCycle && (
@@ -281,19 +281,19 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                     </div>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                        <span style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{agentName}</span>
-                        <span style={{ fontSize: '10px', color: '#9d9db8', padding: '2px 8px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '100px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>🌐 {domain}</span>
-                        <span style={{ fontSize: '10px', color: '#9d9db8', padding: '2px 8px', background: 'rgba(255, 255, 255, 0.04)', borderRadius: '100px', border: '1px solid rgba(255, 255, 255, 0.06)' }}>🎙️ {tone}</span>
+                        <span style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{agentName}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)', padding: '2px 8px', background: 'var(--bg-input)', borderRadius: '100px', border: '1px solid var(--border)' }}>🌐 {domain}</span>
+                        <span style={{ fontSize: '10px', color: 'var(--text-secondary)', padding: '2px 8px', background: 'var(--bg-input)', borderRadius: '100px', border: '1px solid var(--border)' }}>🎙️ {tone}</span>
                       </div>
-                      <div style={{ fontSize: '11px', color: '#71717a', marginTop: '2px' }}>{timeStr}</div>
+                      <div style={{ fontSize: '11px', color: 'var(--text-muted)', marginTop: '2px' }}>{timeStr}</div>
                     </div>
                   </div>
 
                   <button
                     onClick={() => handleCopy(post.text, post.id)}
                     style={{
-                      background: 'none', border: '1px solid rgba(255, 255, 255, 0.08)',
-                      color: '#9d9db8', padding: '5px 12px', borderRadius: '6px',
+                      background: 'none', border: '1px solid var(--border)',
+                      color: 'var(--text-secondary)', padding: '5px 12px', borderRadius: '6px',
                       fontSize: '11px', fontWeight: 600, cursor: 'pointer',
                       display: 'flex', alignItems: 'center', gap: '4px',
                     }}
@@ -306,8 +306,22 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                   </button>
                 </div>
 
-                <div style={{ fontSize: '13.5px', color: '#f4f4f5', lineHeight: 1.7, whiteSpace: 'pre-wrap' }}>
-                  {post.text}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                  {(post.text.includes('\n')
+                    ? post.text.split(/\n+/).filter((p) => p.trim().length > 0)
+                    : post.text.split(/(?<=\.|\?|\!)\s+(?=[A-Z])/).reduce<string[]>((acc, sentence, idx) => {
+                        if (idx === 0 || acc[acc.length - 1].length > 220) {
+                          acc.push(sentence);
+                        } else {
+                          acc[acc.length - 1] += ' ' + sentence;
+                        }
+                        return acc;
+                      }, [])
+                  ).map((paragraph, pIdx) => (
+                    <p key={pIdx} style={{ fontSize: '13.5px', color: 'var(--text-primary)', lineHeight: 1.7, margin: 0 }}>
+                      {paragraph.trim()}
+                    </p>
+                  ))}
                 </div>
 
                 {post.rationale && (
@@ -316,10 +330,10 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                     border: '1px solid rgba(99, 102, 241, 0.15)', borderRadius: '10px',
                     display: 'flex', flexDirection: 'column', gap: '6px',
                   }}>
-                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: '#818cf8', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                    <div style={{ fontSize: '11px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em', color: 'var(--primary-light)', display: 'flex', alignItems: 'center', gap: '5px' }}>
                       <Sparkles size={12} /> Transparent Editorial Rationale
                     </div>
-                    <div style={{ fontSize: '12px', color: '#9d9db8', lineHeight: 1.5 }}>
+                    <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
                       {post.rationale}
                     </div>
                   </div>
@@ -327,7 +341,7 @@ export const FeedTab: React.FC<FeedTabProps> = ({
 
                 {post.sources && post.sources.length > 0 && (
                   <div style={{ marginTop: '4px' }}>
-                    <span style={{ fontSize: '10px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Reference Sources:</span>
+                    <span style={{ fontSize: '10px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: '6px' }}>Reference Sources:</span>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
                       {post.sources.map((src, j) => (
                         <a
@@ -339,7 +353,7 @@ export const FeedTab: React.FC<FeedTabProps> = ({
                             display: 'inline-flex', alignItems: 'center', gap: '5px',
                             padding: '4px 10px', background: 'rgba(6, 182, 212, 0.08)',
                             border: '1px solid rgba(6, 182, 212, 0.2)', borderRadius: '100px',
-                            fontSize: '11px', color: '#22d3ee', textDecoration: 'none',
+                            fontSize: '11px', color: '#0284c7', textDecoration: 'none',
                           }}
                         >
                           {src.replace(/^https?:\/\//, '').split('/')[0]}

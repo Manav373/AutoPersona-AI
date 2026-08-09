@@ -385,34 +385,34 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px', flexWrap: 'wrap' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                     <span style={{
-                      background: 'rgba(255, 255, 255, 0.08)', color: '#a1a1aa',
+                      background: 'var(--bg-input)', color: 'var(--text-secondary)',
                       fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', fontWeight: 700,
-                      padding: '2px 7px', borderRadius: '4px', border: '1px solid rgba(255, 255, 255, 0.06)',
+                      padding: '2px 7px', borderRadius: '4px', border: '1px solid var(--border)',
                     }}>
                       {run.id}
                     </span>
-                    <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>🤖 {run.agentName}</span>
-                    <span style={{ fontSize: '11px', color: '#71717a' }}>[{run.agentDomain}]</span>
+                    <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>🤖 {run.agentName}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>[{run.agentDomain}]</span>
                   </div>
 
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     {run.durationSec !== null && (
-                      <span style={{ fontSize: '11px', color: '#71717a', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <span style={{ fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' }}>
                         <Clock size={10} /> {run.durationSec}s
                       </span>
                     )}
-                    <span style={{ fontSize: '11px', color: '#71717a' }}>{dateStr} {timeStr}</span>
+                    <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>{dateStr} {timeStr}</span>
                     {getOutcomeBadge(run.outcome)}
                   </div>
                 </div>
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-                  <div style={{ fontSize: '14px', fontWeight: 700, color: '#ffffff' }}>{candidateTitle}</div>
+                  <div style={{ fontSize: '14px', fontWeight: 700, color: 'var(--text-primary)' }}>{candidateTitle}</div>
 
                   {firstReview?.reason && (
                     <div style={{
-                      fontSize: '12px', color: '#a1a1aa', fontStyle: 'italic',
-                      background: 'rgba(255, 255, 255, 0.03)', padding: '6px 10px',
+                      fontSize: '12px', color: 'var(--text-secondary)', fontStyle: 'italic',
+                      background: 'var(--bg-input)', padding: '6px 10px',
                       borderRadius: '6px', borderLeft: '2px solid #6366f1',
                     }}>
                       "💬 Judge Verdict: {firstReview.reason}"
@@ -421,8 +421,8 @@ export const JudgmentTab: React.FC<JudgmentTabProps> = ({
 
                   {run.publishedPost && (
                     <div style={{
-                      fontSize: '12px', color: '#cbd5e1', background: 'rgba(34, 197, 94, 0.05)',
-                      border: '1px solid rgba(34, 197, 94, 0.15)', padding: '8px 12px', borderRadius: '6px',
+                      fontSize: '12px', color: 'var(--text-primary)', background: 'rgba(34, 197, 94, 0.12)',
+                      border: '1px solid rgba(34, 197, 94, 0.25)', padding: '8px 12px', borderRadius: '6px',
                     }}>
                       📝 Published Post Draft: "{run.publishedPost.text.slice(0, 140)}..."
                     </div>

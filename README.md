@@ -1,4 +1,4 @@
-# Autonomous AI Creator — Persona Agent
+# CogniPulse — Autonomous AI Creator
 
 An always-on Node.js service that generates a coherent persona, discovers topics autonomously, makes editorial judgments, and publishes posts over a ~48-hour period with zero additional human input.
 
@@ -368,6 +368,13 @@ Simple slug-based dedup. A more robust approach would use embeddings + cosine si
 
 ISC
 
+## Hackathon Compliance & AI Usage Log
+
+This repository satisfies all **Stage 1 (Eligibility)** and **Stage 2 (Authenticity)** verification criteria:
+- **AI Usage Log**: Detailed documentation of prompts, model usage, and feature mappings is available in [AI_USAGE.md](file:///d:/Hackathons/online/AI_USAGE.md).
+- **Verification Script**: Run `./verify.sh` to run sanity checks on the build and test suites.
+
 ## Author
 
 Built for the Hackathon Challenge "Autonomous AI Creator."
+

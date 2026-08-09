@@ -1,4 +1,5 @@
 import * as fs from "fs";
+import * as path from "path";
 import initSqlJs from "sql.js";
 import { Agent, Post, TopicReview, RunLog, PersonaProfile } from "../types";
 
@@ -33,6 +34,22 @@ let SQL: any;
 let db: any;
 let dbPath: string;
 let dbReady = false;
+let initPromise: Promise<void> | null = null;
+
+export function isDbReady(): boolean {
+  return dbReady;
+}
+
+export function ensureDbInitialized(dataPath?: string): Promise<void> {
+  if (dbReady) {
+    return Promise.resolve();
+  }
+  if (!initPromise) {
+    const targetPath = dataPath || process.env.DATABASE_PATH || (process.env.VERCEL ? "/tmp/agent.db" : "./agent.db");
+    initPromise = initDb(targetPath);
+  }
+  return initPromise;
+}
 
 export async function initDb(dataPath: string) {
   SQL = await initSqlJs();
@@ -111,9 +128,17 @@ function createSchema() {
 }
 
 function saveDb() {
-  const data = db.export();
-  const buffer = Buffer.from(data);
-  fs.writeFileSync(dbPath, buffer);
+  try {
+    const dir = path.dirname(dbPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const data = db.export();
+    const buffer = Buffer.from(data);
+    fs.writeFileSync(dbPath, buffer);
+  } catch (err) {
+    console.error("Error saving database file:", err);
+  }
 }
 
 export function saveAgent(agent: Agent) {

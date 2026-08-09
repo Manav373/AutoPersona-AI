@@ -128,19 +128,19 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) =
                     <Icon size={18} />
                   </div>
                   <div>
-                    <div style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>{tmpl.title}</div>
-                    <div style={{ fontSize: '11px', color: '#9d9db8' }}>{tmpl.domain}</div>
+                    <div style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)' }}>{tmpl.title}</div>
+                    <div style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{tmpl.domain}</div>
                   </div>
                 </div>
                 <span style={{
                   fontSize: '10px', fontWeight: 700, padding: '3px 10px', borderRadius: '100px',
-                  background: 'rgba(99, 102, 241, 0.12)', color: '#818cf8', border: '1px solid rgba(99, 102, 241, 0.25)',
+                  background: 'rgba(99, 102, 241, 0.12)', color: 'var(--primary-light)', border: '1px solid rgba(99, 102, 241, 0.25)',
                 }}>
                   {tmpl.badge}
                 </span>
               </div>
 
-              <div style={{ fontSize: '13px', color: '#9d9db8', lineHeight: 1.6, flex: 1 }}>
+              <div style={{ fontSize: '13px', color: 'var(--text-secondary)', lineHeight: 1.6, flex: 1 }}>
                 {tmpl.desc}
               </div>
 
@@ -149,9 +149,9 @@ export const TemplatesView: React.FC<TemplatesViewProps> = ({ onUseTemplate }) =
                   <span
                     key={idx}
                     style={{
-                      fontSize: '10px', fontWeight: 600, color: '#71717a',
-                      background: 'rgba(20, 20, 32, 0.8)', padding: '2px 8px', borderRadius: '6px',
-                      border: '1px solid rgba(255, 255, 255, 0.05)',
+                      fontSize: '10px', fontWeight: 600, color: 'var(--text-secondary)',
+                      background: 'var(--bg-input)', padding: '2px 8px', borderRadius: '6px',
+                      border: '1px solid var(--border)',
                     }}
                   >
                     {t}

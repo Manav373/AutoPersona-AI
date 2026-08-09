@@ -62,13 +62,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
           }} />
           <div>
-            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#818cf8', marginBottom: '8px' }}>
+            <div style={{ fontSize: '11px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--primary-light)', marginBottom: '8px' }}>
               Command Center
             </div>
-            <h2 style={{ fontSize: '24px', fontWeight: 800, color: '#ffffff', lineHeight: 1.2, letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 style={{ fontSize: '24px', fontWeight: 800, color: 'var(--text-primary)', lineHeight: 1.2, letterSpacing: '-0.02em', margin: 0 }}>
               Autonomous Agent<br />Operations Hub
             </h2>
-            <p style={{ fontSize: '13px', color: '#a1a1aa', marginTop: '8px', lineHeight: 1.6, maxWidth: '420px' }}>
+            <p style={{ fontSize: '13px', color: 'var(--text-secondary)', marginTop: '8px', lineHeight: 1.6, maxWidth: '420px' }}>
               Persona agents discover, evaluate, and publish content autonomously. Monitor everything from here.
             </p>
           </div>
@@ -92,8 +92,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               whileHover={{ scale: 1.03 }}
               whileTap={{ scale: 0.97 }}
               style={{
-                padding: '10px 20px', fontSize: '12px', fontWeight: 600, color: '#ffffff',
-                background: 'rgba(255, 255, 255, 0.05)', border: '1px solid rgba(255, 255, 255, 0.1)',
+                padding: '10px 20px', fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)',
+                background: 'var(--bg-input)', border: '1px solid var(--border)',
                 borderRadius: '8px', cursor: 'pointer', display: 'flex', alignItems: 'center',
                 gap: '8px', fontFamily: 'Inter, sans-serif', opacity: agents.length === 0 ? 0.5 : 1,
               }}
@@ -122,10 +122,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#71717a' }}>Active Agents</span>
-            <Bot size={16} color="#818cf8" />
+            <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>Active Agents</span>
+            <Bot size={16} color="var(--primary-light)" />
           </div>
-          <div style={{ fontSize: '36px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', lineHeight: 1 }}>
+          <div style={{ fontSize: '36px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em', lineHeight: 1 }}>
             {activeCount}
           </div>
           <div style={{ fontSize: '11px', color: '#22c55e', display: 'flex', alignItems: 'center', gap: '4px' }}>
@@ -134,8 +134,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         </motion.div>
 
         {[
-          { label: 'Published', value: postsCount, icon: Newspaper, color: '#ffffff' },
-          { label: 'Reviewed', value: reviewsCount, icon: Scale, color: '#ffffff' },
+          { label: 'Published', value: postsCount, icon: Newspaper, color: 'var(--text-primary)' },
+          { label: 'Reviewed', value: reviewsCount, icon: Scale, color: 'var(--text-primary)' },
           { label: 'Accept Rate', value: acceptRate, icon: TrendingUp, color: '#22c55e' },
         ].map((m, i) => (
           <motion.div
@@ -149,8 +149,8 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
             }}
           >
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: '#71717a' }}>{m.label}</span>
-              <m.icon size={14} color="#71717a" />
+              <span style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--text-muted)' }}>{m.label}</span>
+              <m.icon size={14} color="var(--text-muted)" />
             </div>
             <div style={{ fontSize: '28px', fontWeight: 800, color: m.color, letterSpacing: '-0.02em' }}>{m.value}</div>
           </motion.div>
@@ -162,12 +162,12 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
         {/* Active Personas */}
         <motion.div variants={fadeUp} style={{ background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', backdropFilter: 'blur(16px)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Active Personas</span>
+            <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>Active Personas</span>
             <button
               onClick={onOpenCreateModal}
               style={{
                 background: 'none', border: '1px solid rgba(99, 102, 241, 0.25)', borderRadius: '6px',
-                color: '#818cf8', fontSize: '11px', padding: '3px 10px', cursor: 'pointer', fontWeight: 600, fontFamily: 'Inter, sans-serif',
+                color: 'var(--primary-light)', fontSize: '11px', padding: '3px 10px', cursor: 'pointer', fontWeight: 600, fontFamily: 'Inter, sans-serif',
               }}
             >
               + Add
@@ -176,7 +176,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
             {agents.length === 0 ? (
-              <div style={{ fontSize: '12px', color: '#71717a', padding: '16px 0', textAlign: 'center' }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-muted)', padding: '16px 0', textAlign: 'center' }}>
                 No agents deployed yet.
               </div>
             ) : (
@@ -201,13 +201,13 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                       {agent.persona.name[0]}
                     </div>
                     <div>
-                      <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>{agent.persona.name}</div>
-                      <div style={{ fontSize: '10px', color: '#71717a' }}>{agent.persona.domain}</div>
+                      <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>{agent.persona.name}</div>
+                      <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>{agent.persona.domain}</div>
                     </div>
                   </div>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: agent.status === 'active' ? '#22c55e' : '#71717a' }} />
-                    <ArrowUpRight size={12} color="#71717a" />
+                    <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: agent.status === 'active' ? '#22c55e' : 'var(--text-muted)' }} />
+                    <ArrowUpRight size={12} color="var(--text-muted)" />
                   </div>
                 </motion.div>
               ))
@@ -217,10 +217,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
 
         {/* Latest Post Feed Preview */}
         <motion.div variants={fadeUp} style={{ background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '16px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', backdropFilter: 'blur(16px)' }}>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>Latest Published Post</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>Latest Published Post</span>
 
           {posts.length === 0 ? (
-            <div style={{ fontSize: '12px', color: '#71717a', lineHeight: 1.6, padding: '16px 0', textAlign: 'center' }}>
+            <div style={{ fontSize: '12px', color: 'var(--text-muted)', lineHeight: 1.6, padding: '16px 0', textAlign: 'center' }}>
               No published posts yet. Trigger a cycle to generate the first post.
             </div>
           ) : (
@@ -229,7 +229,7 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
               border: '1px solid rgba(255, 255, 255, 0.06)', display: 'flex', flexDirection: 'column', gap: '10px',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <span style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>
+                <span style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>
                   {posts[0].agentId ? agents.find((a) => a.agentId === posts[0].agentId)?.persona.name : 'Agent'}
                 </span>
                 <span style={{
@@ -240,10 +240,10 @@ export const OverviewView: React.FC<OverviewViewProps> = ({
                   Published
                 </span>
               </div>
-              <div style={{ fontSize: '12px', color: '#a1a1aa', lineHeight: 1.6 }}>
+              <div style={{ fontSize: '12px', color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                 {posts[0].text.slice(0, 180)}…
               </div>
-              <div style={{ fontSize: '10px', color: '#71717a', fontFamily: 'JetBrains Mono, monospace' }}>
+              <div style={{ fontSize: '10px', color: 'var(--text-muted)', fontFamily: 'JetBrains Mono, monospace' }}>
                 {new Date(posts[0].createdAt).toLocaleString()}
               </div>
             </div>

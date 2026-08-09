@@ -40,7 +40,7 @@ export async function runCycle(agentId: string) {
     // 1. Discovery
     const persona = db.normalizePersona(agent.persona);
     const interests = persona.interests.length > 0 ? persona.interests : [persona.domain || "General"];
-    const interestIndex = cycleNum % interests.length;
+    const interestIndex = (cycleNum + Math.floor(Date.now() / 10000)) % interests.length;
     console.log(`[${agentId}] Discovering topics (interest: ${interests[interestIndex]})`);
     const candidates = await anthropic.discoverTopics(persona, interestIndex);
 
@@ -55,13 +55,22 @@ export async function runCycle(agentId: string) {
 
     console.log(`[${agentId}] Found ${candidates.length} candidates`);
 
-    // 2. Get memory
-    const recentPosts = db.getRecentPosts(agentId, 20);
+    // 2. Get memory & pre-filter already published candidates
+    const recentPosts = db.getRecentPosts(agentId, 50);
     const recentTopics = (Array.isArray(recentPosts) ? recentPosts : []).map((p) => p.topicKey);
+
+    // Filter out candidates that already exist in SQLite vector/topic memory
+    const freshCandidates = candidates.filter((c) => {
+      const k = db.getTopicKey(c.title);
+      return !db.topicExists(agentId, k);
+    });
+
+    const candidatesToEvaluate = freshCandidates.length > 0 ? freshCandidates : candidates;
+    console.log(`[${agentId}] Evaluating ${candidatesToEvaluate.length} fresh unvisited candidates`);
 
     // 3. Editorial judgment
     console.log(`[${agentId}] Judging topics`);
-    const review = await anthropic.judgeTopics(persona, candidates, recentTopics);
+    const review = await anthropic.judgeTopics(persona, candidatesToEvaluate, recentTopics);
 
     // Save all reviews
     for (const judgment of (review?.all || [])) {
@@ -88,21 +97,37 @@ export async function runCycle(agentId: string) {
       return;
     }
 
-    // Hard dedup check
-    const topicKey = db.getTopicKey(review.accepted.title);
+    // Hard dedup check across candidate list
+    let acceptedCandidate = review.accepted;
+    let topicKey = db.getTopicKey(acceptedCandidate.title);
+
     if (db.topicExists(agentId, topicKey)) {
-      console.log(`[${agentId}] Topic key "${topicKey}" already exists (duplicate detected)`);
-      runLog.outcome = "skipped_dedup";
-      runLog.detail = `Exact match on topic_key: ${topicKey}`;
-      runLog.finishedAt = new Date().toISOString();
-      db.saveRunLog(runLog);
-      reschedule(agentId);
-      return;
+      console.log(`[${agentId}] Topic key "${topicKey}" already exists in memory. Checking remaining candidates...`);
+      const unvisited = (review.all || []).find((j) => j.verdict === 'accept' && !db.topicExists(agentId, db.getTopicKey(j.candidate.title)));
+      if (unvisited && unvisited.candidate) {
+        acceptedCandidate = {
+          ...unvisited.candidate,
+          verdict: 'accept',
+          reason: unvisited.reason,
+          noveltyScore: unvisited.noveltyScore,
+          relevanceScore: unvisited.relevanceScore,
+        };
+        topicKey = db.getTopicKey(acceptedCandidate.title);
+        console.log(`[${agentId}] Selected next unvisited candidate topic: "${acceptedCandidate.title}"`);
+      } else {
+        console.log(`[${agentId}] All candidate topics already exist in memory (duplicate detected)`);
+        runLog.outcome = "skipped_dedup";
+        runLog.detail = `Exact match on topic_key: ${topicKey}`;
+        runLog.finishedAt = new Date().toISOString();
+        db.saveRunLog(runLog);
+        reschedule(agentId);
+        return;
+      }
     }
 
     // 4. Write post
-    console.log(`[${agentId}] Writing post: "${review.accepted.title}"`);
-    const draft = await anthropic.writePost(persona, review.accepted, recentTopics);
+    console.log(`[${agentId}] Writing post: "${acceptedCandidate.title}"`);
+    const draft = await anthropic.writePost(persona, acceptedCandidate, recentTopics);
 
     // Near-duplicate check (simple token overlap)
     const existingTexts = recentPosts.map((p) => p.text);

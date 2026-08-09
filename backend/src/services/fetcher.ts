@@ -189,6 +189,13 @@ export async function fetchLiveNewsCandidates(
   }
 
   const finalCandidates = Array.from(uniqueMap.values());
+  
+  // Shuffle candidates using Fisher-Yates to ensure diverse topic ordering across runs
+  for (let i = finalCandidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [finalCandidates[i], finalCandidates[j]] = [finalCandidates[j], finalCandidates[i]];
+  }
+
   console.log(`[Fetcher] Live web search retrieved ${finalCandidates.length} 100% verified URLs for domain "${domain}" (${interest})`);
 
   return finalCandidates;

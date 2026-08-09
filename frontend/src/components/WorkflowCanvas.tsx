@@ -709,10 +709,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                   <g
                     className="cable-delete-btn"
                     onClick={(e) => handleDeleteConnection(conn.id, e)}
-                    style={{ cursor: 'pointer', opacity: 0.8 }}
+                    style={{ cursor: 'pointer', opacity: 0.85 }}
                   >
-                    <circle cx={cable.midX} cy={cable.midY} r="9" fill="#121215" stroke="rgba(255, 255, 255, 0.2)" />
-                    <text x={cable.midX} y={cable.midY + 3.5} textAnchor="middle" fill="#a1a1aa" fontSize="10px" fontWeight="bold">×</text>
+                    <circle cx={cable.midX} cy={cable.midY} r="9" fill="var(--bg-card-solid)" stroke="var(--border)" />
+                    <text x={cable.midX} y={cable.midY + 3.5} textAnchor="middle" fill="var(--text-secondary)" fontSize="10px" fontWeight="bold">×</text>
                   </g>
                 </g>
               );
@@ -781,7 +781,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 top: `${node.y}px`,
                 position: 'absolute',
                 minWidth: '200px',
-                background: 'rgba(14, 14, 24, 0.95)',
+                background: 'var(--bg-card-solid)',
                 border: isSelected
                   ? '1.5px solid #6366f1'
                   : isConnectingFrom
@@ -793,8 +793,8 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 pointerEvents: 'auto',
                 zIndex: isConnectingFrom ? 50 : isSelected ? 20 : 5,
                 boxShadow: isSelected
-                  ? `0 0 0 3px ${categoryTheme.glow}, 0 12px 36px rgba(0, 0, 0, 0.7)`
-                  : `0 8px 24px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08)`,
+                  ? `0 0 0 3px ${categoryTheme.glow}, 0 12px 36px rgba(0, 0, 0, 0.2)`
+                  : `0 8px 24px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.08)`,
                 backdropFilter: 'blur(16px)',
                 userSelect: 'none',
               }}
@@ -818,9 +818,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
-                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  background: 'var(--bg-card-solid)', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
                   top: '-6px', left: '50%', transform: 'translateX(-50%)',
-                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                  boxShadow: `0 0 6px ${categoryTheme.color}`,
                 }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
@@ -831,9 +831,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
-                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  background: 'var(--bg-card-solid)', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
                   left: '-6px', top: '50%', transform: 'translateY(-50%)',
-                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                  boxShadow: `0 0 6px ${categoryTheme.color}`,
                 }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
@@ -850,10 +850,10 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 </div>
 
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: '12px', fontWeight: 800, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
+                  <div style={{ fontSize: '12px', fontWeight: 800, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', letterSpacing: '-0.01em' }}>
                     {node.title}
                   </div>
-                  <div style={{ fontSize: '10px', color: '#9d9db8', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
+                  <div style={{ fontSize: '10px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' }}>
                     <span style={{ width: '5px', height: '5px', borderRadius: '50%', background: categoryTheme.color }} />
                     {node.subtitle}
                   </div>
@@ -873,7 +873,7 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                   <motion.button
                     whileHover={{ scale: 1.2, color: '#ef4444' }}
                     whileTap={{ scale: 0.9 }}
-                    style={{ background: 'none', border: 'none', fontSize: '15px', color: '#71717a', cursor: 'pointer', padding: '2px', lineHeight: 1 }}
+                    style={{ background: 'none', border: 'none', fontSize: '15px', color: 'var(--text-muted)', cursor: 'pointer', padding: '2px', lineHeight: 1 }}
                     onClick={(e) => handleDeleteNode(node.id, e)}
                     title="Remove node"
                   >
@@ -888,9 +888,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
-                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  background: 'var(--bg-card-solid)', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
                   right: '-6px', top: '50%', transform: 'translateY(-50%)',
-                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                  boxShadow: `0 0 6px ${categoryTheme.color}`,
                 }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"
@@ -901,9 +901,9 @@ export const WorkflowCanvas: React.FC<WorkflowCanvasProps> = ({
                 whileTap={{ scale: 0.8 }}
                 style={{
                   position: 'absolute', width: '10px', height: '10px', borderRadius: '50%',
-                  background: '#07070d', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
+                  background: 'var(--bg-card-solid)', border: `2px solid ${categoryTheme.color}`, cursor: 'crosshair', zIndex: 6,
                   bottom: '-6px', left: '50%', transform: 'translateX(-50%)',
-                  boxShadow: `0 0 8px ${categoryTheme.color}`,
+                  boxShadow: `0 0 6px ${categoryTheme.color}`,
                 }}
                 onClick={(e) => startConnecting(node.id, e)}
                 title="Click port to connect to another node"

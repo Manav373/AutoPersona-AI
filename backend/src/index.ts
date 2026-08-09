@@ -8,15 +8,36 @@ import * as db from "./db";
 import { router as apiRouter } from "./routes/api";
 import { stopScheduler } from "./services/scheduler";
 
+import fs from "fs";
+
 const app = express();
 app.use(express.json());
 
 // Serve static frontend build if present
 const publicPath = path.join(__dirname, "../public");
-app.use(express.static(publicPath));
+const distPath = path.join(__dirname, "../../frontend/dist");
+
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath));
+} else if (fs.existsSync(publicPath)) {
+  app.use(express.static(publicPath));
+}
 
 // API Routes
 app.use(apiRouter);
+
+// Fallback to index.html for SPA client-side routing
+app.get("*", (req, res, next) => {
+  if (req.path.startsWith("/api")) return next();
+  const indexPath = fs.existsSync(path.join(distPath, "index.html"))
+    ? path.join(distPath, "index.html")
+    : path.join(publicPath, "index.html");
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    next();
+  }
+});
 
 const PORT = parseInt(process.env.PORT || "3000", 10);
 const DB_PATH = process.env.DATABASE_PATH || "./agent.db";

@@ -77,15 +77,14 @@ router.get("/api/agent/feed", async (req: Request, res: Response) => {
 
     if (!agentId || agentId === "all" || typeof agentId !== "string") {
       const posts = db.getAllPosts();
+      posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       return res.json({
         posts: posts.map((p) => ({
-          id: p.id,
-          agentId: p.agentId,
-          createdAt: p.createdAt,
-          text: p.text,
-          rationale: p.rationale,
-          sources: p.sources,
-          topicKey: p.topicKey,
+          id: String(p.id),
+          createdAt: new Date(p.createdAt).toISOString(),
+          text: p.text || "",
+          rationale: p.rationale || "",
+          sources: Array.isArray(p.sources) ? p.sources : [],
         })),
       });
     }
@@ -96,15 +95,14 @@ router.get("/api/agent/feed", async (req: Request, res: Response) => {
     }
 
     const posts = db.getPosts(agentId);
+    posts.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     const response = {
       posts: posts.map((p) => ({
-        id: p.id,
-        agentId: p.agentId,
-        createdAt: p.createdAt,
-        text: p.text,
-        rationale: p.rationale,
-        sources: p.sources,
-        topicKey: p.topicKey,
+        id: String(p.id),
+        createdAt: new Date(p.createdAt).toISOString(),
+        text: p.text || "",
+        rationale: p.rationale || "",
+        sources: Array.isArray(p.sources) ? p.sources : [],
       })),
     };
 

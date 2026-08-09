@@ -145,28 +145,28 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
             transition={{ duration: 0.15 }}
             style={{ display: 'flex', flexDirection: 'column', height: '100%', width: '210px' }}
           >
-            <div style={{ padding: '16px 14px 10px', fontSize: '13px', fontWeight: 800, color: '#ffffff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '-0.01em' }}>
+            <div style={{ padding: '16px 14px 10px', fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', letterSpacing: '-0.01em' }}>
               <span>Agent Tools</span>
               <motion.button
                 onClick={() => setIsCollapsed(true)}
                 title="Close Agent Tools Palette"
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}
-                style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}
+                style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px', borderRadius: '4px', display: 'flex' }}
               >
                 <PanelLeftClose size={15} />
               </motion.button>
             </div>
 
             <div style={{ padding: '0 12px 12px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px' }}>
-                <Search size={13} color="#71717a" />
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', padding: '7px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '8px' }}>
+                <Search size={13} color="var(--text-muted)" />
                 <input
                   type="text"
                   placeholder="Search tools..."
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  style={{ background: 'transparent', border: 'none', outline: 'none', color: '#ffffff', fontSize: '11px', width: '100%', fontFamily: 'Inter, sans-serif' }}
+                  style={{ background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '11px', width: '100%', fontFamily: 'Inter, sans-serif' }}
                 />
               </div>
             </div>
@@ -182,7 +182,7 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
 
                 return (
                   <div key={idx}>
-                    <div style={{ fontSize: '9px', fontWeight: 800, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', paddingLeft: '2px' }}>{group.title}</div>
+                    <div style={{ fontSize: '9px', fontWeight: 800, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '8px', paddingLeft: '2px' }}>{group.title}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
                       {filtered.map((item, i) => {
                         const Icon = item.icon;
@@ -196,7 +196,7 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
                             whileTap={{ scale: 0.98 }}
                             style={{
                               display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 10px',
-                              background: 'rgba(20, 20, 32, 0.6)', border: '1px solid rgba(255, 255, 255, 0.06)',
+                              background: 'var(--bg-input)', border: '1px solid var(--border)',
                               borderRadius: '8px', cursor: 'pointer', transition: 'all 0.15s ease',
                             }}
                           >
@@ -204,8 +204,8 @@ export const AddNodesSidebar: React.FC<AddNodesSidebarProps> = ({ onAddNode }) =
                               <Icon size={13} />
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
-                              <span style={{ fontSize: '11px', fontWeight: 600, color: '#ffffff', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
-                              <span style={{ fontSize: '9px', color: '#71717a', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <span style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-primary)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.name}</span>
+                              <span style={{ fontSize: '9px', color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {item.desc}
                               </span>
                             </div>

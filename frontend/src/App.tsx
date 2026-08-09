@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { LeftNavSidebar, NavView } from './components/LeftNavSidebar';
 import { AddNodesSidebar } from './components/AddNodesSidebar';
 import { WorkflowCanvas, SelectedNodeInfo, CanvasNodeData, ConnectionData, INITIAL_NODES, INITIAL_CONNECTIONS } from './components/WorkflowCanvas';
@@ -12,8 +13,11 @@ import { JudgmentTab } from './components/JudgmentTab';
 import { PersonaTab } from './components/PersonaTab';
 import { LogsTab } from './components/LogsTab';
 import { CreateAgentModal } from './components/CreateAgentModal';
+import { UserProfileModal } from './components/UserProfileModal';
+import { HelpDocModal } from './components/HelpDocModal';
+import { LogoutModal } from './components/LogoutModal';
 import { Agent, Post, TopicReview, RunLog, SystemStats } from './types';
-import { Share2, Save, MoreHorizontal, Cpu, Code, Filter, RefreshCw, Database, Send, Clock, Search, Scale, Sparkles, AlertCircle, Bell, Zap, Activity } from 'lucide-react';
+import { Share2, Save, MoreHorizontal, Cpu, Code, Filter, RefreshCw, Database, Send, Clock, Search, Scale, Sparkles, AlertCircle, Bell, Zap, Activity, Sun, Moon } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const VIEW_TITLES: Record<NavView, { title: string; sub: string }> = {
@@ -29,6 +33,21 @@ const VIEW_TITLES: Record<NavView, { title: string; sub: string }> = {
 };
 
 export function App() {
+  const navigate = useNavigate();
+  const [theme, setTheme] = useState<'dark' | 'light'>(() => {
+    return (localStorage.getItem('autopersona_theme') as 'dark' | 'light') || 'dark';
+  });
+
+  const handleToggleTheme = () => {
+    const next = theme === 'dark' ? 'light' : 'dark';
+    setTheme(next);
+    localStorage.setItem('autopersona_theme', next);
+  };
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
+
   const [agents, setAgents] = useState<Agent[]>([]);
   const [selectedAgentId, setSelectedAgentId] = useState<string>('all');
   const [activeView, setActiveView] = useState<NavView>(() => {
@@ -51,6 +70,10 @@ export function App() {
   const [stats, setStats] = useState<SystemStats | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
+  const [isHelpModalOpen, setIsHelpModalOpen] = useState(false);
+  const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
+
   const [isCreating, setIsCreating] = useState(false);
   const [isTriggering, setIsTriggering] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -59,6 +82,15 @@ export function App() {
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
+  };
+
+  const handleConfirmLogout = () => {
+    setIsLogoutModalOpen(false);
+    localStorage.removeItem('autopersona_session');
+    showToast('🔒 Logged out safely. Redirecting to Landing Page...');
+    setTimeout(() => {
+      navigate('/');
+    }, 500);
   };
 
   const agentsMap = useMemo(() => {
@@ -337,6 +369,7 @@ export function App() {
             isTriggering={isTriggering}
             onToggleStatus={handleToggleAgentStatus}
             isActive={isActiveToggle}
+            onSelectAgent={setSelectedAgentId}
           />
         );
       case 'credentials':
@@ -349,7 +382,7 @@ export function App() {
   };
 
   return (
-    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: '#07070d' }}>
+    <div style={{ display: 'flex', height: '100vh', width: '100vw', overflow: 'hidden', background: 'var(--bg-app)' }}>
       {/* 1. Leftmost Navigation Sidebar */}
       <LeftNavSidebar
         agents={agents}
@@ -359,6 +392,11 @@ export function App() {
         onChangeView={handleSetActiveView}
         onOpenCreateModal={() => setIsModalOpen(true)}
         postsCount={posts.length}
+        theme={theme}
+        onToggleTheme={handleToggleTheme}
+        onOpenProfileModal={() => setIsProfileModalOpen(true)}
+        onOpenHelpModal={() => setIsHelpModalOpen(true)}
+        onOpenLogoutModal={() => setIsLogoutModalOpen(true)}
       />
 
       {/* 2. Add Nodes Palette Sidebar */}
@@ -367,31 +405,49 @@ export function App() {
       )}
 
       {/* 3. Center Workspace Area */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative', background: '#050508' }}>
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden', position: 'relative', background: 'var(--bg-canvas)' }}>
         {/* Workspace Topbar */}
         <div style={{
           height: '44px', padding: '0 20px', display: 'flex', alignItems: 'center',
-          justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.06)',
-          background: 'rgba(9, 9, 11, 0.85)', zIndex: 10, flexShrink: 0, backdropFilter: 'blur(16px)',
+          justifyContent: 'space-between', borderBottom: '1px solid var(--border)',
+          background: 'var(--bg-topbar, rgba(9, 9, 11, 0.85))', zIndex: 10, flexShrink: 0, backdropFilter: 'blur(16px)',
         }}>
           {/* Left: View Title & Subtitle */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <span style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#6366f1', boxShadow: '0 0 8px #6366f1', flexShrink: 0 }} />
-            <h2 style={{ fontSize: '13px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.01em', margin: 0 }}>{currentTitle.title}</h2>
-            <span style={{ fontSize: '11px', color: '#52525b' }}>/</span>
-            <span style={{ fontSize: '11px', color: '#9d9db8' }}>{currentTitle.sub}</span>
+            <h2 style={{ fontSize: '13px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.01em', margin: 0 }}>{currentTitle.title}</h2>
+            <span style={{ fontSize: '11px', color: 'var(--text-muted)' }}>/</span>
+            <span style={{ fontSize: '11px', color: 'var(--text-secondary)' }}>{currentTitle.sub}</span>
           </div>
 
-          {/* Right: Persona Selector & Minimal Action */}
+          {/* Right: Persona Selector & Quick Actions */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {/* Theme Toggle Button */}
+            <motion.button
+              onClick={handleToggleTheme}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              style={{
+                padding: '4px 10px', background: 'var(--bg-input)',
+                border: '1px solid var(--border)', borderRadius: '6px',
+                color: theme === 'light' ? '#f59e0b' : '#a1a1aa', fontSize: '11px', fontWeight: 600,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '5px',
+                fontFamily: 'Inter, sans-serif',
+              }}
+              title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+            >
+              {theme === 'light' ? <Sun size={13} color="#f59e0b" /> : <Moon size={13} />}
+              <span>{theme === 'light' ? 'Light' : 'Dark'}</span>
+            </motion.button>
+
             {/* Agent Persona Filter */}
             <select
               value={selectedAgentId}
               onChange={(e) => setSelectedAgentId(e.target.value)}
               style={{
-                padding: '4px 10px', background: 'rgba(20, 20, 32, 0.7)',
-                border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px',
-                color: '#e4e4e7', fontSize: '11px', fontWeight: 600, outline: 'none',
+                padding: '4px 10px', background: 'var(--bg-input)',
+                border: '1px solid var(--border)', borderRadius: '6px',
+                color: 'var(--text-primary)', fontSize: '11px', fontWeight: 600, outline: 'none',
                 fontFamily: 'Inter, sans-serif', cursor: 'pointer',
               }}
             >
@@ -447,12 +503,29 @@ export function App() {
         />
       )}
 
-      {/* Modal */}
+      {/* Modals */}
       <CreateAgentModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
         onSubmit={handleCreate}
         isSubmitting={isCreating}
+      />
+
+      <UserProfileModal
+        isOpen={isProfileModalOpen}
+        onClose={() => setIsProfileModalOpen(false)}
+        showToast={showToast}
+      />
+
+      <HelpDocModal
+        isOpen={isHelpModalOpen}
+        onClose={() => setIsHelpModalOpen(false)}
+      />
+
+      <LogoutModal
+        isOpen={isLogoutModalOpen}
+        onClose={() => setIsLogoutModalOpen(false)}
+        onConfirmLogout={handleConfirmLogout}
       />
 
       {/* Toast */}
@@ -467,12 +540,16 @@ export function App() {
               zIndex: 2000, pointerEvents: 'none',
             }}
           >
-            <div style={{
-              background: '#121215', border: '1px solid rgba(255, 255, 255, 0.1)',
-              boxShadow: '0 12px 40px rgba(0,0,0,0.7)', color: '#ffffff',
-              padding: '10px 20px', borderRadius: '10px', fontSize: '12px',
-              fontWeight: 600, whiteSpace: 'nowrap', backdropFilter: 'blur(16px)',
-            }}>
+            <div
+              className="app-toast-pill"
+              style={{
+                background: '#0f172a', border: '1px solid #334155',
+                boxShadow: '0 12px 40px rgba(0, 0, 0, 0.4)', color: '#ffffff',
+                padding: '10px 22px', borderRadius: '100px', fontSize: '12px',
+                fontWeight: 700, whiteSpace: 'nowrap', backdropFilter: 'blur(16px)',
+                display: 'flex', alignItems: 'center', gap: '8px',
+              }}
+            >
               {toastMessage}
             </div>
           </motion.div>

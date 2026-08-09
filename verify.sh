@@ -17,6 +17,7 @@ echo "✅ Checking configuration files..."
 [ -f tsconfig.json ] && echo "  - tsconfig.json ✓" || (echo "  - tsconfig.json ✗" && exit 1)
 [ -f .env.example ] && echo "  - .env.example ✓" || (echo "  - .env.example ✗" && exit 1)
 [ -f README.md ] && echo "  - README.md ✓" || (echo "  - README.md ✗" && exit 1)
+[ -f AI_USAGE.md ] && echo "  - AI_USAGE.md ✓" || (echo "  - AI_USAGE.md ✗" && exit 1)
 
 echo ""
 echo "✅ Checking test files..."

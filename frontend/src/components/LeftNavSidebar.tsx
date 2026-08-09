@@ -2,7 +2,7 @@ import React from 'react';
 import {
   Sparkles, Home, Newspaper, ListChecks, Workflow,
   LayoutDashboard, KeyRound, Variable, Settings, Plus,
-  ChevronDown, Sun, HelpCircle, LogOut,
+  ChevronDown, Sun, Moon, HelpCircle, LogOut,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { Agent } from '../types';
@@ -17,6 +17,11 @@ interface LeftNavSidebarProps {
   onChangeView: (view: NavView) => void;
   onOpenCreateModal: () => void;
   postsCount: number;
+  theme?: 'dark' | 'light';
+  onToggleTheme?: () => void;
+  onOpenProfileModal?: () => void;
+  onOpenHelpModal?: () => void;
+  onOpenLogoutModal?: () => void;
 }
 
 const navItems: { view: NavView; icon: React.ElementType; label: string; section: 'nav' | 'system' }[] = [
@@ -38,6 +43,11 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
   onChangeView,
   onOpenCreateModal,
   postsCount,
+  theme = 'dark',
+  onToggleTheme,
+  onOpenProfileModal,
+  onOpenHelpModal,
+  onOpenLogoutModal,
 }) => {
   const navGroup = navItems.filter((n) => n.section === 'nav');
   const systemGroup = navItems.filter((n) => n.section === 'system');
@@ -50,7 +60,7 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
     }}>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
         {/* Brand Header */}
-        <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+        <div style={{ padding: '18px 16px 16px', display: 'flex', alignItems: 'center', gap: '10px', borderBottom: '1px solid var(--border)' }}>
           <div style={{
             width: '28px', height: '28px', borderRadius: '8px',
             background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
@@ -59,12 +69,12 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
           }}>
             <Sparkles size={15} color="#fff" />
           </div>
-          <span style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>AutoPersona</span>
+          <span style={{ fontSize: '15px', fontWeight: 800, color: 'var(--text-primary)', letterSpacing: '-0.02em' }}>CogniPulse</span>
         </div>
 
         {/* Main Menu Links */}
         <div style={{ padding: '6px 8px', display: 'flex', flexDirection: 'column', gap: '2px', overflowY: 'auto' }}>
-          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 12px 4px' }}>
+          <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '10px 12px 4px' }}>
             Navigation
           </div>
           {navGroup.map((item) => {
@@ -79,13 +89,13 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
-                  borderRadius: '6px', color: isActive ? '#ffffff' : '#71717a', fontSize: '12px',
+                  borderRadius: '6px', color: isActive ? (theme === 'light' ? '#4f46e5' : '#ffffff') : 'var(--text-muted)', fontSize: '12px',
                   fontWeight: isActive ? 700 : 500, cursor: 'pointer', border: 'none',
-                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  background: isActive ? (theme === 'light' ? 'rgba(79, 70, 229, 0.12)' : 'rgba(99, 102, 241, 0.15)') : 'transparent',
                   width: '100%', textAlign: 'left', position: 'relative', fontFamily: 'Inter, sans-serif',
                 }}
               >
-                <Icon size={14} color={isActive ? '#818cf8' : '#71717a'} />
+                <Icon size={14} color={isActive ? (theme === 'light' ? '#4f46e5' : '#818cf8') : 'var(--text-muted)'} />
                 {item.label}
                 {item.view === 'feed' && postsCount > 0 && (
                   <span style={{
@@ -99,9 +109,9 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
             );
           })}
 
-          <div style={{ height: '1px', background: 'rgba(255, 255, 255, 0.06)', margin: '8px 12px' }} />
+          <div style={{ height: '1px', background: 'var(--border)', margin: '8px 12px' }} />
 
-          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '4px 12px' }}>
+          <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '4px 12px' }}>
             System
           </div>
           {systemGroup.map((item) => {
@@ -116,20 +126,20 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
                 transition={{ type: 'spring', stiffness: 400, damping: 25 }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: '10px', padding: '8px 12px',
-                  borderRadius: '6px', color: isActive ? '#ffffff' : '#71717a', fontSize: '12px',
+                  borderRadius: '6px', color: isActive ? (theme === 'light' ? '#4f46e5' : '#ffffff') : 'var(--text-muted)', fontSize: '12px',
                   fontWeight: isActive ? 700 : 500, cursor: 'pointer', border: 'none',
-                  background: isActive ? 'rgba(99, 102, 241, 0.15)' : 'transparent',
+                  background: isActive ? (theme === 'light' ? 'rgba(79, 70, 229, 0.12)' : 'rgba(99, 102, 241, 0.15)') : 'transparent',
                   width: '100%', textAlign: 'left', fontFamily: 'Inter, sans-serif',
                 }}
               >
-                <Icon size={14} color={isActive ? '#818cf8' : '#71717a'} />
+                <Icon size={14} color={isActive ? (theme === 'light' ? '#4f46e5' : '#818cf8') : 'var(--text-muted)'} />
                 {item.label}
               </motion.button>
             );
           })}
 
           {/* YOUR AGENTS */}
-          <div style={{ fontSize: '9px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '12px 12px 4px' }}>
+          <div style={{ fontSize: '9px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.08em', padding: '12px 12px 4px' }}>
             Agents
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
@@ -148,8 +158,8 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
                   style={{
                     display: 'flex', alignItems: 'center', gap: '10px', padding: '7px 10px',
                     borderRadius: '8px', cursor: 'pointer', border: 'none',
-                    background: isActive ? 'rgba(99, 102, 241, 0.12)' : 'transparent',
-                    width: '100%', textAlign: 'left', color: isActive ? '#ffffff' : '#a1a1aa',
+                    background: isActive ? (theme === 'light' ? 'rgba(79, 70, 229, 0.12)' : 'rgba(99, 102, 241, 0.12)') : 'transparent',
+                    width: '100%', textAlign: 'left', color: isActive ? (theme === 'light' ? '#4f46e5' : '#ffffff') : 'var(--text-secondary)',
                     fontFamily: 'Inter, sans-serif',
                   }}
                 >
@@ -166,7 +176,7 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
                   </span>
                   <span style={{
                     width: '6px', height: '6px', borderRadius: '50%',
-                    background: agent.status === 'active' ? '#22c55e' : '#71717a',
+                    background: agent.status === 'active' ? '#22c55e' : 'var(--text-muted)',
                     flexShrink: 0,
                   }} />
                 </motion.button>
@@ -181,7 +191,7 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
             style={{
               margin: '10px 4px 4px', padding: '8px 12px', display: 'flex',
               alignItems: 'center', justifyContent: 'center', gap: '6px',
-              background: 'rgba(99, 102, 241, 0.08)', color: '#818cf8',
+              background: 'rgba(99, 102, 241, 0.08)', color: 'var(--primary-light)',
               border: '1px dashed rgba(99, 102, 241, 0.25)', borderRadius: '6px',
               fontSize: '11px', fontWeight: 600, cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}
@@ -192,8 +202,11 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
       </div>
 
       {/* Profile Footer */}
-      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-        <div style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+      <div style={{ borderTop: '1px solid var(--border)' }}>
+        <div 
+          onClick={onOpenProfileModal}
+          style={{ padding: '12px', display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer' }}
+        >
           <div style={{
             width: '28px', height: '28px', borderRadius: '50%',
             background: 'linear-gradient(135deg, #f59e0b, #ef4444)',
@@ -203,16 +216,22 @@ export const LeftNavSidebar: React.FC<LeftNavSidebarProps> = ({
             A
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: '12px', fontWeight: 600, color: '#ffffff' }}>Aarav Mehta</div>
-            <div style={{ fontSize: '10px', color: '#71717a' }}>Pro Plan</div>
+            <div style={{ fontSize: '12px', fontWeight: 600, color: 'var(--text-primary)' }}>Aarav Mehta</div>
+            <div style={{ fontSize: '10px', color: 'var(--text-muted)' }}>Pro Plan</div>
           </div>
-          <ChevronDown size={14} color="#71717a" style={{ cursor: 'pointer' }} />
+          <ChevronDown size={14} color="var(--text-muted)" style={{ cursor: 'pointer' }} />
         </div>
 
-        <div style={{ padding: '8px 14px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Theme"><Sun size={13} /></button>
-          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Help"><HelpCircle size={13} /></button>
-          <button style={{ background: 'none', border: 'none', color: '#71717a', cursor: 'pointer', padding: '4px' }} title="Logout"><LogOut size={13} /></button>
+        <div style={{ padding: '8px 14px 12px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '1px solid var(--border)' }}>
+          <button
+            onClick={onToggleTheme}
+            style={{ background: 'none', border: 'none', color: theme === 'light' ? '#f59e0b' : 'var(--text-muted)', cursor: 'pointer', padding: '4px', display: 'flex', alignItems: 'center' }}
+            title={`Switch to ${theme === 'dark' ? 'Light' : 'Dark'} Mode`}
+          >
+            {theme === 'light' ? <Sun size={14} color="#f59e0b" /> : <Moon size={14} />}
+          </button>
+          <button onClick={onOpenHelpModal} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }} title="Help"><HelpCircle size={13} /></button>
+          <button onClick={onOpenLogoutModal} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: '4px' }} title="Logout"><LogOut size={13} /></button>
         </div>
       </div>
     </aside>

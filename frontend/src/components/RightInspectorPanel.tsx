@@ -205,12 +205,12 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
       </div>
 
       {/* Node Header */}
-      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255, 255, 255, 0.08)' }}>
+      <div style={{ padding: '14px 16px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid var(--border)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: 'rgba(34, 197, 94, 0.12)', color: '#22c55e', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Icon size={15} />
           </div>
-          <span style={{ fontSize: '13px', fontWeight: 700, color: '#ffffff' }}>{node.title}</span>
+          <span style={{ fontSize: '13px', fontWeight: 700, color: 'var(--text-primary)' }}>{node.title}</span>
         </div>
         <button
           onClick={handleTestNode}
@@ -231,13 +231,13 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
 
       {/* Test Node Result Banner */}
       {testOutput && (
-        <div style={{ background: 'rgba(16, 185, 129, 0.1)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '6px', padding: '10px 12px', margin: '10px 16px 0' }}>
-          <p style={{ fontSize: '11px', color: '#22c55e', lineHeight: 1.4, margin: 0, fontWeight: 500 }}>{testOutput}</p>
+        <div style={{ background: 'rgba(16, 185, 129, 0.12)', border: '1px solid rgba(16, 185, 129, 0.25)', borderRadius: '6px', padding: '10px 12px', margin: '10px 16px 0' }}>
+          <p style={{ fontSize: '11px', color: '#166534', lineHeight: 1.4, margin: 0, fontWeight: 600 }}>{testOutput}</p>
         </div>
       )}
 
       {/* Inspector Tabs */}
-      <div style={{ display: 'flex', borderBottom: '1px solid rgba(255, 255, 255, 0.08)', padding: '0 16px' }}>
+      <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', padding: '0 16px' }}>
         {[
           { key: 'parameters', label: 'Parameters' },
           { key: 'settings', label: 'Settings' },
@@ -248,7 +248,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
             onClick={() => setActiveTab(t.key as any)}
             style={{
               padding: '10px 14px', fontSize: '12px', fontWeight: activeTab === t.key ? 700 : 500,
-              color: activeTab === t.key ? '#ffffff' : '#71717a', background: 'transparent',
+              color: activeTab === t.key ? '#6366f1' : 'var(--text-secondary)', background: 'transparent',
               border: 'none', borderBottom: activeTab === t.key ? '2px solid #6366f1' : '2px solid transparent',
               cursor: 'pointer', fontFamily: 'Inter, sans-serif',
             }}
@@ -264,12 +264,12 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
           <>
             {node.params.map((p, i) => (
               <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.label}</label>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{p.label}</label>
                 {p.label.toLowerCase().includes('type') || p.label.toLowerCase().includes('timezone') ? (
                   <select
                     value={paramValues[i] || p.value}
                     onChange={(e) => handleParamChange(i, e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                    style={{ width: '100%', padding: '8px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   >
                     <option value={p.value}>{p.value}</option>
                     <option value="Cron Expression">Cron Expression</option>
@@ -280,20 +280,20 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                     type="text"
                     value={paramValues[i] !== undefined ? paramValues[i] : p.value}
                     onChange={(e) => handleParamChange(i, e.target.value)}
-                    style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                    style={{ width: '100%', padding: '8px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   />
                 )}
               </div>
             ))}
 
             {targetNodeOptions.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '10px', borderTop: '1px solid rgba(255, 255, 255, 0.08)' }}>
-                <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Connect to Node</label>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', paddingTop: '10px', borderTop: '1px solid var(--border)' }}>
+                <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Connect to Node</label>
                 <div style={{ display: 'flex', gap: '6px' }}>
                   <select
                     value={connectTargetId}
                     onChange={(e) => setConnectTargetId(e.target.value)}
-                    style={{ flex: 1, padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
+                    style={{ flex: 1, padding: '8px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'Inter, sans-serif' }}
                   >
                     <option value="">Select target node...</option>
                     {targetNodeOptions.map((opt) => (
@@ -306,7 +306,7 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
                     onClick={handleConnectClick}
                     disabled={!connectTargetId}
                     title="Connect nodes"
-                    style={{ padding: '8px 12px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '6px', color: '#818cf8', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    style={{ padding: '8px 12px', background: 'rgba(99, 102, 241, 0.15)', border: '1px solid rgba(99, 102, 241, 0.3)', borderRadius: '6px', color: 'var(--primary-light)', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
                   >
                     <Link2 size={14} />
                   </button>
@@ -314,9 +314,9 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
               </div>
             )}
 
-            <div style={{ padding: '14px', background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px' }}>
-              <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>{node.description || 'What does this node do?'}</div>
-              <div style={{ fontSize: '11px', color: '#9d9db8', lineHeight: 1.5 }}>{node.descriptionDetail}</div>
+            <div style={{ padding: '14px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+              <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>{node.description || 'What does this node do?'}</div>
+              <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>{node.descriptionDetail}</div>
             </div>
           </>
         )}
@@ -324,34 +324,34 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
         {activeTab === 'settings' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>On Error Action</label>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>On Error Action</label>
               <select
                 value={onErrorAction}
                 onChange={(e) => setOnErrorAction(e.target.value as 'stop' | 'continue')}
-                style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none' }}
+                style={{ width: '100%', padding: '8px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '12px', outline: 'none' }}
               >
                 <option value="stop">Stop Workflow Cycle</option>
                 <option value="continue">Continue & Log Error</option>
               </select>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <label style={{ fontSize: '11px', fontWeight: 600, color: '#a1a1aa' }}>Retry Attempts</label>
+              <label style={{ fontSize: '11px', fontWeight: 600, color: 'var(--text-muted)' }}>Retry Attempts</label>
               <input
                 type="number"
                 value={retryAttempts}
                 min={0}
                 max={5}
                 onChange={(e) => setRetryAttempts(Number(e.target.value))}
-                style={{ width: '100%', padding: '8px 10px', background: 'rgba(20, 20, 32, 0.85)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '6px', color: '#ffffff', fontSize: '12px', outline: 'none' }}
+                style={{ width: '100%', padding: '8px 10px', background: 'var(--bg-input)', border: '1px solid var(--border)', borderRadius: '6px', color: 'var(--text-primary)', fontSize: '12px', outline: 'none' }}
               />
             </div>
           </div>
         )}
 
         {activeTab === 'docs' && (
-          <div style={{ padding: '14px', background: 'rgba(16, 16, 28, 0.75)', border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '12px' }}>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff', marginBottom: '4px' }}>Node Documentation</div>
-            <div style={{ fontSize: '11px', color: '#9d9db8', lineHeight: 1.5 }}>
+          <div style={{ padding: '14px', background: 'var(--bg-surface)', border: '1px solid var(--border)', borderRadius: '12px' }}>
+            <div style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)', marginBottom: '4px' }}>Node Documentation</div>
+            <div style={{ fontSize: '11px', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               This node handles automated workflow steps for autonomous persona publishing. Parameters configure execution intervals, target search domains, and LLM judgment thresholds.
             </div>
           </div>
@@ -359,20 +359,20 @@ export const RightInspectorPanel: React.FC<RightInspectorPanelProps> = ({
       </div>
 
       {/* Inspector Bottom Footer Status */}
-      <div style={{ borderTop: '1px solid rgba(255, 255, 255, 0.08)', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'rgba(0, 0, 0, 0.2)' }}>
+      <div style={{ borderTop: '1px solid var(--border)', padding: '14px 16px', display: 'flex', flexDirection: 'column', gap: '8px', background: 'var(--bg-surface)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
           <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: selectedAgent?.status === 'stopped' ? '#f59e0b' : '#22c55e' }} />
-          <span style={{ fontSize: '12px', fontWeight: 700, color: '#ffffff' }}>
+          <span style={{ fontSize: '12px', fontWeight: 700, color: 'var(--text-primary)' }}>
             {selectedAgent ? `${selectedAgent.persona.name} [${selectedAgent.status.toUpperCase()}]` : 'Output Ready'}
           </span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-          <span style={{ color: '#71717a' }}>Next execution</span>
-          <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{formatNextExecution()}</span>
+          <span style={{ color: 'var(--text-muted)' }}>Next execution</span>
+          <span style={{ color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>{formatNextExecution()}</span>
         </div>
         <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '11px' }}>
-          <span style={{ color: '#71717a' }}>Execution ID</span>
-          <span style={{ color: '#ffffff', fontFamily: 'JetBrains Mono, monospace' }}>{latestExecId}</span>
+          <span style={{ color: 'var(--text-muted)' }}>Execution ID</span>
+          <span style={{ color: 'var(--text-primary)', fontFamily: 'JetBrains Mono, monospace' }}>{latestExecId}</span>
         </div>
       </div>
     </motion.div>

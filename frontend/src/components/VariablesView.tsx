@@ -146,8 +146,8 @@ export const VariablesView: React.FC = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.1 }}
         style={{
-          background: 'rgba(16, 16, 28, 0.75)',
-          border: '1px solid rgba(255, 255, 255, 0.08)',
+          background: 'var(--bg-card)',
+          border: '1px solid var(--border)',
           borderRadius: '14px',
           padding: '18px',
           backdropFilter: 'blur(16px)',
@@ -158,44 +158,46 @@ export const VariablesView: React.FC = () => {
         }}
       >
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>New Variable Key</label>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>New Variable Key</label>
           <input
             type="text"
             placeholder="e.g. MAX_DAILY_POSTS"
             value={newKey}
             onChange={(e) => setNewKey(e.target.value)}
             style={{
-              padding: '9px 12px', background: 'rgba(20, 20, 32, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
-              color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
+              padding: '9px 12px', background: 'var(--bg-input)',
+              border: '1px solid var(--border)', borderRadius: '8px',
+              color: 'var(--text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
             }}
           />
         </div>
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-          <label style={{ fontSize: '11px', fontWeight: 700, color: '#71717a', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Configured Value</label>
+          <label style={{ fontSize: '11px', fontWeight: 700, color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Configured Value</label>
           <input
             type="text"
             placeholder="e.g. 12"
             value={newValue}
             onChange={(e) => setNewValue(e.target.value)}
             style={{
-              padding: '9px 12px', background: 'rgba(20, 20, 32, 0.85)',
-              border: '1px solid rgba(255, 255, 255, 0.08)', borderRadius: '8px',
-              color: '#ffffff', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
+              padding: '9px 12px', background: 'var(--bg-input)',
+              border: '1px solid var(--border)', borderRadius: '8px',
+              color: 'var(--text-primary)', fontSize: '12px', outline: 'none', fontFamily: 'JetBrains Mono, monospace',
             }}
           />
         </div>
-        <button
+        <motion.button
           type="submit"
+          whileHover={{ scale: 1.03 }}
+          whileTap={{ scale: 0.97 }}
           style={{
-            padding: '10px 18px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
+            padding: '9px 18px', background: 'linear-gradient(135deg, #6366f1, #8b5cf6)',
             border: 'none', borderRadius: '8px', color: '#ffffff', fontSize: '12px',
-            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '6px',
-            boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)',
+            fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center',
+            gap: '6px', fontFamily: 'Inter, sans-serif', boxShadow: '0 0 16px rgba(99, 102, 241, 0.3)',
           }}
         >
           <Plus size={14} /> Add Variable
-        </button>
+        </motion.button>
       </motion.form>
     </div>
   );

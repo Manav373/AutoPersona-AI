@@ -130,7 +130,7 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
 
       {/* Logs Table / List */}
       {filteredLogs.length === 0 ? (
-        <div style={{ background: 'rgba(16, 16, 28, 0.5)', border: '1px dashed rgba(255, 255, 255, 0.08)', borderRadius: '14px', padding: '40px 24px', textAlign: 'center', color: '#71717a', fontSize: '13px' }}>
+        <div style={{ background: 'var(--bg-surface)', border: '1px dashed var(--border)', borderRadius: '14px', padding: '40px 24px', textAlign: 'center', color: 'var(--text-muted)', fontSize: '13px' }}>
           No execution logs match the selected filter criteria.
         </div>
       ) : (
@@ -138,8 +138,8 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           style={{
-            background: 'rgba(12, 12, 20, 0.95)',
-            border: '1px solid rgba(255, 255, 255, 0.08)',
+            background: 'var(--bg-card)',
+            border: '1px solid var(--border)',
             borderRadius: '14px',
             padding: '16px',
             fontFamily: 'JetBrains Mono, monospace',
@@ -148,7 +148,7 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
             flexDirection: 'column',
             gap: '10px',
             backdropFilter: 'blur(16px)',
-            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.5)',
+            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.4)',
           }}
         >
           {filteredLogs.map((log, i) => {
@@ -185,8 +185,8 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  background: 'rgba(20, 20, 32, 0.8)',
-                  border: '1px solid rgba(255, 255, 255, 0.06)',
+                  background: 'var(--bg-input)',
+                  border: '1px solid var(--border)',
                   borderRadius: '10px',
                   overflow: 'hidden',
                 }}
@@ -203,11 +203,11 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
                     flexWrap: 'wrap',
                   }}
                 >
-                  <span style={{ color: '#71717a', fontSize: '11px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                  <span style={{ color: 'var(--text-muted)', fontSize: '11px', flexShrink: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
                     <Clock size={11} /> {time}
                   </span>
 
-                  <span style={{ color: '#818cf8', fontWeight: 700, flexShrink: 0, background: 'rgba(99, 102, 241, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
+                  <span style={{ color: 'var(--primary-light)', fontWeight: 700, flexShrink: 0, background: 'rgba(99, 102, 241, 0.12)', padding: '2px 8px', borderRadius: '4px' }}>
                     🤖 {name}
                   </span>
 
@@ -225,11 +225,11 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
                     {log.outcome.replace(/_/g, ' ')}
                   </span>
 
-                  <span style={{ color: '#d4d4d8', fontSize: '12px', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '12px', flex: 1, minWidth: 0, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                     {cleanDetail}
                   </span>
 
-                  <div style={{ color: '#71717a', display: 'flex', alignItems: 'center' }}>
+                  <div style={{ color: 'var(--text-muted)', display: 'flex', alignItems: 'center' }}>
                     {isExpanded ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
                   </div>
                 </div>
@@ -242,17 +242,17 @@ export const LogsTab: React.FC<LogsTabProps> = ({ logs, agentsMap }) => {
                       animate={{ height: 'auto', opacity: 1 }}
                       exit={{ height: 0, opacity: 0 }}
                       transition={{ duration: 0.2 }}
-                      style={{ padding: '0 14px 14px', borderTop: '1px solid rgba(255, 255, 255, 0.05)', background: 'rgba(12, 12, 20, 0.5)' }}
+                      style={{ padding: '0 14px 14px', borderTop: '1px solid var(--border)', background: 'var(--bg-surface)' }}
                     >
                       <div style={{ paddingTop: '10px', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '10px', fontSize: '11px' }}>
-                        <div><span style={{ color: '#71717a' }}>Log ID:</span> <span style={{ color: '#818cf8' }}>#{log.id}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Date:</span> <span style={{ color: '#ffffff' }}>{dateStr}</span></div>
-                        <div><span style={{ color: '#71717a' }}>Domain:</span> <span style={{ color: '#ffffff' }}>{domain}</span></div>
+                        <div><span style={{ color: 'var(--text-muted)' }}>Log ID:</span> <span style={{ color: 'var(--primary-light)' }}>#{log.id}</span></div>
+                        <div><span style={{ color: 'var(--text-muted)' }}>Date:</span> <span style={{ color: 'var(--text-primary)' }}>{dateStr}</span></div>
+                        <div><span style={{ color: 'var(--text-muted)' }}>Domain:</span> <span style={{ color: 'var(--text-primary)' }}>{domain}</span></div>
                       </div>
 
-                      <div style={{ marginTop: '10px', fontSize: '11px', color: '#a1a1aa', background: 'rgba(0, 0, 0, 0.3)', padding: '10px', borderRadius: '6px', border: '1px solid rgba(255, 255, 255, 0.04)' }}>
+                      <div style={{ marginTop: '10px', fontSize: '11px', color: 'var(--text-secondary)', background: 'var(--bg-input)', padding: '10px', borderRadius: '6px', border: '1px solid var(--border)' }}>
                         <strong>Full Execution Payload:</strong>
-                        <p style={{ margin: '4px 0 0', lineHeight: 1.5, color: '#d4d4d8' }}>{cleanDetail}</p>
+                        <p style={{ margin: '4px 0 0', lineHeight: 1.5, color: 'var(--text-primary)' }}>{cleanDetail}</p>
                       </div>
                     </motion.div>
                   )}

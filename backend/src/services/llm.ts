@@ -9,16 +9,46 @@ import {
 import { normalizePersona } from "../db";
 import { fetchLiveNewsCandidates } from "./fetcher";
 
-let _client: Groq | null = null;
-function getClient(): Groq {
-  if (!_client) {
-    const apiKey = process.env.GROQ_API_KEY;
-    if (!apiKey) {
-      console.warn("GROQ_API_KEY is not set in environment variables");
-    }
-    _client = new Groq({ apiKey: apiKey || "missing-key" });
+// ═══════════════════════════════════════════════════════════════
+// MULTI API KEY POOL & ROUND-ROBIN ROTATION
+// Supports comma-separated keys in GROQ_API_KEYS or numbered keys (GROQ_API_KEY, GROQ_API_KEY_2, GROQ_API_KEY_3, etc.)
+// ═══════════════════════════════════════════════════════════════
+function getApiKeyPool(): string[] {
+  const keys: string[] = [];
+
+  // 1. Check GROQ_API_KEYS (comma-separated string)
+  if (process.env.GROQ_API_KEYS) {
+    const split = process.env.GROQ_API_KEYS.split(/[,;\n]/).map((k) => k.trim()).filter((k) => k.length > 5);
+    split.forEach((k) => {
+      if (!keys.includes(k)) keys.push(k);
+    });
   }
-  return _client;
+
+  // 2. Dynamically scan all environment variables matching GROQ_API_KEY*
+  Object.keys(process.env).forEach((envKey) => {
+    if (envKey.startsWith('GROQ_API_KEY')) {
+      const val = (process.env[envKey] || '').trim();
+      if (val && val.length > 5 && !keys.includes(val)) {
+        keys.push(val);
+      }
+    }
+  });
+
+  if (keys.length === 0) {
+    console.warn("⚠️ No GROQ API keys detected in environment variables. Please check your backend .env file.");
+  }
+
+  return keys.length > 0 ? keys : ['missing-key'];
+}
+
+let keyIndexCounter = 0;
+const clientCache = new Map<string, Groq>();
+
+function getClientForKey(apiKey: string): Groq {
+  if (!clientCache.has(apiKey)) {
+    clientCache.set(apiKey, new Groq({ apiKey }));
+  }
+  return clientCache.get(apiKey)!;
 }
 
 // Fallback Model Pool for Groq Rate Limit (429 TPD / TPM) Mitigation
@@ -30,31 +60,48 @@ const FALLBACK_MODELS = [
   "gemma2-9b-it",
 ];
 
-async function callLLMWithRetry(params: any, retries: number = 3): Promise<any> {
+async function callLLMWithRetry(params: any, retries: number = 2): Promise<any> {
+  const keysPool = getApiKeyPool();
   let lastErr: any = null;
 
-  for (const modelCandidate of FALLBACK_MODELS) {
-    const currentParams = { ...params, model: modelCandidate };
-    for (let attempt = 1; attempt <= retries; attempt++) {
-      try {
-        const response = await getClient().chat.completions.create(currentParams);
-        return response;
-      } catch (err: any) {
-        lastErr = err;
-        const isRateLimit =
-          err?.status === 429 ||
-          err?.error?.error?.code === "rate_limit_exceeded" ||
-          String(err?.message || "").includes("Rate limit");
+  // Round-robin start index
+  const startKeyIdx = keyIndexCounter % keysPool.length;
+  keyIndexCounter++;
 
-        if (isRateLimit) {
-          console.warn(`[Groq RateLimit 429 on ${modelCandidate}] Switching to next fallback model...`);
-          break; // Try next fallback model
-        }
+  // Rotate through each API key in the pool
+  for (let k = 0; k < keysPool.length; k++) {
+    const keyIdx = (startKeyIdx + k) % keysPool.length;
+    const currentApiKey = keysPool[keyIdx];
+    const client = getClientForKey(currentApiKey);
 
-        if (attempt < retries) {
-          await new Promise((resolve) => setTimeout(resolve, 1000));
-        } else {
-          break;
+    // Fallback through models for current key
+    for (const modelCandidate of FALLBACK_MODELS) {
+      const currentParams = { ...params, model: modelCandidate };
+
+      for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+          const response = await client.chat.completions.create(currentParams);
+          if (keysPool.length > 1) {
+            console.log(`[LLM Multi-API Pool] Call succeeded using Key #${keyIdx + 1}/${keysPool.length} (Model: ${modelCandidate})`);
+          }
+          return response;
+        } catch (err: any) {
+          lastErr = err;
+          const isRateLimit =
+            err?.status === 429 ||
+            err?.error?.error?.code === "rate_limit_exceeded" ||
+            String(err?.message || "").includes("Rate limit");
+
+          if (isRateLimit) {
+            console.warn(`[Groq 429 Rate Limit] Key #${keyIdx + 1} exhausted on model ${modelCandidate}. Rotating API key & fallback model...`);
+            break; // Break model attempt to rotate to next API key/model
+          }
+
+          if (attempt < retries) {
+            await new Promise((resolve) => setTimeout(resolve, 800));
+          } else {
+            break;
+          }
         }
       }
     }
@@ -110,11 +157,21 @@ function extractJSON(content: string, preferArray: boolean = false): string {
   }
 
   let jsonSub = text.substring(start, lastEnd + 1);
-  // Sanitize invalid control characters in raw LLM JSON output (e.g. unescaped newlines inside strings)
+
+  // 1. Sanitize invalid control characters (unescaped newlines, carriage returns, tabs)
   jsonSub = jsonSub.replace(/[\u0000-\u001F]+/g, (match) => {
     if (match === "\n" || match === "\r") return " ";
     if (match === "\t") return " ";
     return "";
+  });
+
+  // 2. Clean trailing commas in objects and arrays: `,}` or `,]` or `,  ]`
+  jsonSub = jsonSub.replace(/,\s*([\}\]])/g, '$1');
+
+  // 3. Fix unescaped internal double-quotes inside string values (e.g. "candidateTitle": "He said "hello" world")
+  jsonSub = jsonSub.replace(/("(?:candidateTitle|title|reason|text|rationale)"):\s*"([\s\S]*?)"(?=\s*[,\}])/g, (fullMatch, key, val) => {
+    const cleanVal = val.replace(/(?<!\\)"/g, '\\"');
+    return `${key}: "${cleanVal}"`;
   });
 
   return jsonSub;
@@ -250,10 +307,15 @@ export async function judgeTopics(
 ): Promise<JudgmentReview> {
   const normalized = normalizePersona(persona);
 
+  const cleanCandidates = candidates.map(c => ({
+    title: (c.title || "").replace(/"/g, "'").slice(0, 100),
+    snippet: (c.snippet || "").replace(/"/g, "'").slice(0, 150)
+  }));
+
   const prompt = `You are "${normalized.name}", an editorial judge in domain "${normalized.domain}".
 Voice: ${normalized.voice.tone}.
 Evaluated Candidates:
-${JSON.stringify(candidates.map(c => ({ title: c.title, snippet: c.snippet })))}
+${JSON.stringify(cleanCandidates)}
 
 Recent published topics to avoid: ${JSON.stringify(recentTopics.slice(0, 5))}
 
@@ -275,7 +337,7 @@ Return ONLY valid JSON:
     const res = await callLLMWithRetry({
       messages: [{ role: "user", content: prompt }],
       temperature: 0.3,
-      max_tokens: 600,
+      max_tokens: 1200,
     });
 
     const content = res.choices[0]?.message?.content || "";
@@ -367,10 +429,10 @@ Voice: ${normalized.voice.tone}, ${normalized.voice.sentenceStyle}. POV: ${norma
 Topic: ${accepted.title}
 Snippet: ${accepted.snippet}
 
-Write 2 concise paragraphs in character.
+Write 2-3 distinct, concise paragraphs in character. Use double newlines (\\n\\n) to separate paragraphs clearly.
 Return ONLY valid JSON:
 {
-  "text": "The full post text...",
+  "text": "First paragraph text...\\n\\nSecond paragraph text...",
   "rationale": "I selected this topic because...",
   "sources": ["${accepted.url || 'https://news.ycombinator.com'}"]
 }`;
